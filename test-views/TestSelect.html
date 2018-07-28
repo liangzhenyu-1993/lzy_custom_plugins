@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>testSelect3</title>
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-select/custom.select.css">
+    <style>
+        #city {
+            float: left;
+            width: 120px;
+            height: 30px;
+            margin-left: 10px;
+            padding: 5px;
+            box-shadow: 1px 1px 2px #18a15f;
+            /*border-radius: 5px;*/
+            border: 1px solid #18a15f;
+            color: #18a15f;
+        }
+
+        input {
+            float: left;
+            margin-left: 10px;
+        }
+    </style>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../custom-plugins/custom-select/jquery.custom.select-v1.1.js"></script>
+    <script type="text/javascript">
+
+        var diySelect, diySelect2;
+        $(function () {
+            diySelect = $.initSelect("#city", true, function () {
+                //这个回调函数和onChange中的回调函数是同一个函数
+                console.log(this.getSelected());//this对象是diySelect
+            });
+            diySelect.onChange(function () {
+                console.log(this.getSelected());
+            });
+            $("#city").on("change", function () {
+                console.log($("#city").find("option:selected").val())
+            });
+        });
+
+        function check() {
+            console.log($("#city").find("option:selected").text());//原始方式
+            console.log(diySelect.getSelected('name'));//api方式
+        }
+
+        function add() {
+//            diySelect.addRow("测试", {name: "测试", value: (Math.random() * 1000000).toFixed(0)});
+            diySelect.addOption("<option name=\"测试\" value=\"" + (Math.random() * 1000000).toFixed(0) + "\">测试</option>");
+//            $("#city").append("<option name=\"测试\" value=\"" + (Math.random() * 1000000).toFixed(0) + "\">测试</option>");
+        }
+
+
+        function setVal() {
+//            $("#city").find("option[value=860762]").attr("selected", "selected");
+            diySelect.setSelected("value", "860762");
+        }
+
+
+    </script>
+</head>
+<body>
+<select id="city">
+    <option name="全省" value="10025">全省</option>
+    <option name="广州" value="86020">广州</option>
+    <option name="深圳" value="860755">深圳</option>
+    <option name="佛山" value="860757">佛山</option>
+    <option name="东莞" value="860769">东莞</option>
+    <option name="惠州" value="860752">惠州</option>
+    <option name="中山" value="860760">中山</option>
+    <option name="茂名" value="860668">茂名</option>
+    <option name="湛江" value="860759">湛江</option>
+    <option name="江门" value="860750">江门</option>
+    <option name="珠海" value="860756">珠海</option>
+    <option name="肇庆" value="860758">肇庆</option>
+    <option name="汕头" value="860754">汕头</option>
+    <option name="揭阳" value="860663">揭阳</option>
+    <option name="清远" value="860763">清远</option>
+    <option name="阳江" value="860662">阳江</option>
+    <option name="韶关" value="860751">韶关</option>
+    <option name="梅州" value="860753">梅州</option>
+    <option name="潮州" value="860768">潮州</option>
+    <option name="河源" value="860762">河源</option>
+    <option name="汕尾" value="860660">汕尾</option>
+    <option name="云浮" value="860766">云浮</option>
+</select>
+
+<input type="button" value="测试选中值" onclick="check()">
+<input type="button" value="添加子项" onclick="add()">
+<input type="button" value="设置选中状态" onclick="setVal()">
+
+</body>
+</html>
