@@ -127,6 +127,14 @@
                 var b = parseInt(arrRgb[2] * oft);
                 return "rgb(" + r + "," + g + "," + b + ")";
             };
+            var isIE = function () {
+                var userAgent = navigator.userAgent;
+                var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+                var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+                var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
+                if (isIE || isIE11 || isEdge) return true;
+                return false;
+            };
             var getObjByType = function () {
                 for (var i = 1; i < arguments.length; i++) if (typeof arguments[i] === arguments[0]) return arguments[i];
                 return null;
@@ -148,44 +156,61 @@
                 var _this = this;
                 this._select = $(realsSelector);
                 this._parent = $("<div class='lzy_select_parent'><div class='lzy_s_p_content'></div><div class='lzy_s_p_arraw'>﹀</div></div>").insertBefore(this._select.hide());
-                var pStyles = ['position', 'top', 'right', 'left', 'bottom', 'float', 'marginTop', 'marginLeft', 'marginRight', 'marginBottom'];//位置方位的样式必须复制
+                var pStyles = ['position', 'top', 'right', 'left', 'bottom', 'float', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom'];//位置方位的样式必须复制
                 for (var i = 0; i < pStyles.length; i++) this._parent.css(pStyles[i], this._select.css(pStyles[i]));
                 this._list = $("<div class='lzy_select_list'></div>").appendTo("body");
 
                 if (isCopyStyle) {
                     //节点本身的样式根据是否添加来确定复制
-                    var copyPStyle = ['width', 'height', 'color', 'backgroundColor', 'border-radius', 'borderColor', 'borderStyle', 'borderWidth', 'box-shadow'];
+                    var copyPStyle = ['width', 'height', 'color', 'backgroundColor', 'border-radius', 'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', 'border-style', 'border-width', 'box-shadow'];
                     for (var i = 0; i < copyPStyle.length; i++) this._parent.css(copyPStyle[i], this._select.css(copyPStyle[i]));
                     this._parent.css({
-                        'width': this._select.outerWidth() - this._select.css("borderWidth").replace("px", "") * 2,
-                        'height': this._select.outerHeight() - this._select.css("borderWidth").replace("px", "") * 2
+                        'width': this._select.outerWidth() - this._select.css("border-width").replace("px", "") * 2,
+                        'height': this._select.outerHeight() - this._select.css("border-width").replace("px", "") * 2
                     });
                     var copyCStyle = ['paddingTop', 'paddingLeft', 'paddingRight', 'paddingBottom'];
                     for (var i = 0; i < copyCStyle.length; i++) this._parent.find(".lzy_s_p_content").css(copyCStyle[i], this._select.css(copyCStyle[i]));
                     this._parent.find(".lzy_s_p_content").css({ //宽高要单独赋值是因为 css("width") 使用的是外宽，而实际要内宽
                         'width': this._select.width() - 23,
                         'height': this._select.height(),
-                        'lineHeight': this._select.height() + "px"
+                        'lineHeight': (isIE() ? this._select.height() + 4 : this._select.height()) + "px"
                     });
-                    this._parent.find(".lzy_s_p_arraw").css("marginTop", this._select.height() / 2 - 2);
+                    this._parent.find(".lzy_s_p_arraw").css({
+                        "margin-top": this._select.height() / 2 - 2,
+                        "color": this._select.css("border-left-color")
+                    });
 
-                    var lStyles = ['backgroundColor', 'border-radius', 'borderColor', 'borderStyle', 'borderWidth', 'box-shadow'];
+                    var lStyles = ['backgroundColor', 'border-radius', 'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', 'border-style', 'border-width', 'box-shadow'];
                     for (var i = 0; i < lStyles.length; i++) this._list.css(lStyles[i], this._select.css(lStyles[i]));
-                    this._list.css('width', this._select.outerWidth() - this._select.css("borderWidth").replace("px", "") * 2);
+                    this._list.css('width', this._select.outerWidth() - this._select.css("border-width").replace("px", "") * 2);
 
-                    $("<style></style>").text("div.lzy_select_list::-webkit-scrollbar-thumb{background-color:" + this._select.css("borderColor") + ";}" +
-                        ".lzy_select_list > div:hover {background-color: " + darkColor(this._select.css("background-color"), .9) + ";}" +
-                        ".lzy_select_parent > .lzy_s_p_arraw {color: " + this._select.css("borderColor") + ";}" +
-                        ".lzy_select_list > div:hover {background-color: " + dimColor(this._select.css("borderColor"), .12) + ";}" +
-                        ".lzy_select_list > div {color: " + this._select.css("color") + ";padding:" + this._select.css("padding") + ";line-height:" + this._select.height() + "px" +
-                        ";height:" + this._select.height() + "px;width:" + (this._select.width() - this._select.css("borderWidth").replace("px", "") * 2) + "px;}").appendTo($("head"));
+                    $("<style></style>").text("div.lzy_select_list::-webkit-scrollbar-thumb{background-color:" + this._select.css("border-left-color") + ";}").appendTo($("head"));
                 }
+
+                var listSonWidth = _this._select.width() - _this._select.css("border-width").replace("px", "") * 2 + "px";
+                if (isIE() || navigator.userAgent.indexOf("Firefox") > -1) listSonWidth = (_this._select.width() - _this._select.css("border-width").replace("px", "") * 2 - 15) + "px"; //火狐,ie 的滚动条的宽为15px
 
                 var setList = function () {
                     var options = _this._select.find("option");
                     for (var i = _this._size; i < options.length; i++) {
                         var attrs = options[i].attributes;
                         var $son = $("<div></div>").attr("title", options[i].text).append(options[i].text);
+                        if (isCopyStyle) {
+                            $son.css({
+                                'color': _this._select.css("color"),
+                                'padding-left': _this._select.css("padding-left"),
+                                'padding-right': _this._select.css("padding-right"),
+                                'padding-top': _this._select.css("padding-top"),
+                                'padding-bottom': _this._select.css("padding-bottom"),
+                                'line-height': _this._select.height() + "px",
+                                'height': _this._select.height() + "px",
+                                'width': listSonWidth
+                            }).hover(function () {
+                                $(this).css("background-color", dimColor(_this._select.css("border-left-color"), .12));
+                            }, function () {
+                                $(this).css("background-color", "transparent");
+                            });
+                        }
                         for (var j = 0; j < attrs.length; j++) {
                             if (attrs[j].name !== "class") $son.attr(attrs[j].name, attrs[j].value);
                         }
