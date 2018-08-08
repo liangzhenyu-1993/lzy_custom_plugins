@@ -11,9 +11,10 @@
         }
 
     </style>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.2.css">
     <script src="../js/jquery-1.9.1.min.js"></script>
-    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.1.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.2.js"></script>
+
     <script>
 
         //注意：以下只是为了演示才这样写，
@@ -21,10 +22,11 @@
         //比如：var myPopup = $.initPopup(); //配置好自己需要的弹框对象
         //  myPopup.showPopup("xxx","title"); //这样调用才是正确的
         //  myPopup.addButton("功能",function(obj){}); //这样才是一直使用同一个对象
+        //最后 showPopup25 到 showPopup28这几个实例才是正确的使用方式
 
 
         function showPopup1() {
-            $.initPopup().showPopup("默认情况下");
+            $.initPopup().showPopup("可以使用键盘的Esc按键关闭弹框");
         }
 
         function showPopup2() {
@@ -127,11 +129,16 @@
                 }).addButton("取消").showPopup("按键的对齐方式默认为右对齐");
         }
 
+        var mypop15;
+
         function showPopup15() {
-            $.initPopup({allowedMove: true})
-                .addButton("确定", function () {
-                    alert("点击了确定");
-                }).addButton("取消").showPopup("弹框添加可以拖动，虽然这个功能作用不大，但作者我还是想加上去");
+            if (!mypop15) {
+                mypop15 = $.initPopup({allowedMove: true})
+                    .addButton("确定", function () {
+                        alert("点击了确定");
+                    }).addButton("取消");
+            }
+            mypop15.showPopup("弹框添加可以拖动，虽然这个功能作用不大，但作者我还是想加上去");
         }
 
         function showPopup16() {
@@ -222,23 +229,66 @@
             }).addButton("取消").showPopup("有时候我们希望弹框弹出的位置不是在中间，而是出现在我们指定的某个节点附近，同时弹框和指定节点的距离也是可以设置的");
         }
 
+
+        var mypop25, mypop26, mypop27, mypop28;
+
         function showPopup25() {
-            $.initPopup().addButton("确定", function () {
-                alert("点击了确定");
-            }).addButton("取消").showPopup(".content");
+            mypop25.showPopup();
         }
 
         function showPopup26() {
-            $.initPopup().addButton("确定", function () {
-                alert("点击了确定");
-            }).addButton("取消").showPopup("#content");
+            mypop26.showPopup("#content");
         }
 
         function showPopup27() {
-            $.initPopup().addButton("确定", function () {
-                alert("点击了确定");
-            }).addButton("取消").showPopup("<span style='font-size: 18px;'>内容可以是节点，一般我用于设置字体大小；弹框内容部分是强制水平和垂直居中的，所以添加任何东西都可以</span>");
+            mypop27.showPopup();
         }
+
+        function showPopup28() {
+            mypop28.showPopup("放大全屏功能是一位热心网友建议，感谢这位网友！");
+        }
+
+        $(function () {
+            // ------------------------------------------------------
+            if (!mypop25) {
+                mypop25 = $.initPopup({
+                    content: ".content"
+                }).addButton("确定", function () {
+                    alert("点击了确定");
+                }).addButton("取消");
+                /*
+                错误用法：
+                     mypop25 = $.initPopup({
+                         content: ".content"
+                     }).addButton("确定", function () {
+                         alert("点击了确定");
+                     }).addButton("取消").showPopup();
+                 在这里的showPopup()是没有返回值的，也就是mypop25将会为undefined
+                 */
+            }
+            // ------------------------------------------------------
+            if (!mypop26) {
+                mypop26 = $.initPopup({
+                    content: "#content"
+                }).addButton("确定", function () {
+                    alert("点击了确定");
+                }).addButton("取消");
+            }
+            // ------------------------------------------------------
+            if (!mypop27) {
+                mypop27 = $.initPopup({
+                    content: "<span style='font-size: 18px;'>内容可以是节点，一般我用于设置字体大小；弹框内容部分是强制水平和垂直居中的，所以添加任何东西都可以</span>"
+                }).addButton("确定", function () {
+                    alert("点击了确定");
+                }).addButton("取消");
+            }
+            // ------------------------------------------------------
+            if (!mypop28) {
+                mypop28 = $.initPopup({allowedFullscreen: true}).addButton("确定", function () {
+                    alert("点击了确定");
+                }).addButton("取消");
+            }
+        });
     </script>
 </head>
 <body>
@@ -298,10 +348,10 @@
         <td colspan="2"><input type="button" id="btn24" value="使用节点作内容1" onclick="showPopup25();"></td>
         <td colspan="2"><input type="button" id="btn25" value="使用节点作内容2" onclick="showPopup26();"></td>
         <td colspan="2"><input type="button" id="btn26" value="使用节点作内容3" onclick="showPopup27();"></td>
+        <td><input type="button" id="btn27" value="放大全屏" onclick="showPopup28();"></td>
     </tr>
     </tbody>
 </table>
-
 
 <div class="content" style="border: 1px solid black;">
     我的选择器是 类：content

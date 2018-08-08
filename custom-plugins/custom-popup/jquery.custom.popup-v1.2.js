@@ -17,7 +17,7 @@
         status:配置文件的状态（false:在原配置上追加，重复的将覆盖；true:全新覆盖，未配置的将使用默认值），默认值为false
     4.显示提示框
         myPop.showPopup(content,title);
-        content:任意内容，强制水平和垂直居中
+        content:任意内容（可选），若无则使用 cfg 配置中的内容设置，若cfg配置中也没有设置将为空白，强制水平和垂直居中
         title:标题(可选)，若无则使用 cfg 配置中的标题设置，若cfg配置中也没有设置将使用默认值：“消息”
     5.关闭提示框
         myPop.closePopup();
@@ -36,6 +36,10 @@
         shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为10px，
         isShowIcon:是否显示左上图标,默认:true,
         icon:图标的图片（可以是路径，也可以是图片base64编码）,
+        allowedFullscreen：是否允许全屏，即是否添加全屏按键，默认值：false,
+        allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
+        content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
+            简而言之就是不常改变的内容（一般都是配置了样式的节点）放在这，经常改变的内容（一般都是一句疑问句）就放在showPopup方法中。
         title:弹框标题,
         buttonAlign:按键对齐方式，left,center和right三种方式,
         isShowBg:是否显示背景,默认:false,
@@ -101,13 +105,37 @@
                 var arrRgb = toRGB(color).replace("rgb(", "").replace(")", "").split(",");
                 return "rgb(" + parseInt(arrRgb[0] * oft) + "," + parseInt(arrRgb[1] * oft) + "," + parseInt(arrRgb[2] * oft) + ")";
             };
+            var isIE = function () {
+                var userAgent = navigator.userAgent;
+                var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
+                var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
+                var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
+                if (isIE) {
+                    var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
+                    reIE.test(userAgent);
+                    var fIEVersion = parseInt(RegExp["$1"]);
+                    if (fIEVersion === 7) return 7;
+                    else if (fIEVersion === 8) return 8;
+                    else if (fIEVersion === 9) return 9;
+                    else if (fIEVersion === 10) return 10;
+                    else return 0;
+                }
+                if (isEdge) return "edge";
+                if (isIE11) return 11;
+                return false;
+            };
+            var isFire = function () {
+                return navigator.userAgent.indexOf("Firefox") > -1;
+            };
             var lzyPopup = function (cfg) {
+                var _this = this;
                 this.popupObj = null;
                 this.bgObj = null;
                 this.cfg = null;
-                var _this = this;
+                this.fullTemp = {full: false};
                 this.bgObj = $("<div class='lzy_custom_bg'></div>").appendTo("body");
-                this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div><div class='lzy_nav_title'>消息</div><div class='lzy_nav_close'>✖</div></div>" +
+                this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div>" +
+                    "<div class='lzy_nav_title'>消息</div><div class='lzy_nav_close'>×</div><div class='lzy_nav_full lzy_nav_full_normal'><span>◻</span></div></div>" +
                     "<div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>").appendTo("body").on("click", ".lzy_nav_close", function () {
                     _this.closePopup();
                 });
@@ -116,22 +144,25 @@
             lzyPopup.prototype = {
                 setStyle: function (cfg, status) {
                     cfg = cfg || {};
-                    var isTrue = function (val) {
-                        return !(val === null || typeof(val) === "undefined");
+                    var isEmpty = function (val) {
+                        return val === null || typeof(val) === "undefined";
                     };
                     if (status) {
                         this.cfg = {
                             width: cfg.width || 350,
                             height: cfg.height || 200,
                             border: cfg.border || '1px solid black',
-                            borderRadius: isTrue(cfg.borderRadius) ? cfg.borderRadius : 5,
-                            isShowIcon: cfg.isShowIcon === undefined ? true : cfg.isShowIcon,
+                            borderRadius: isEmpty(cfg.borderRadius) ? 5 : cfg.borderRadius,
+                            isShowIcon: isEmpty(cfg.isShowIcon) ? true : cfg.isShowIcon,
                             icon: cfg.icon || null,
+                            allowedFullscreen: cfg.allowedFullscreen,
+                            allowedKeyboard: isEmpty(cfg.allowedKeyboard) ? true : cfg.allowedKeyboard,
+                            content: cfg.content || null,
                             title: cfg.title || null,
                             buttonAlign: cfg.buttonAlign || 'right',
                             themeColor: cfg.themeColor || "#358aff",
-                            isShowShadow: cfg.isShowShadow === undefined ? true : cfg.isShowShadow,
-                            shadowSize: isTrue(cfg.shadowSize) ? cfg.shadowSize : 10,
+                            isShowShadow: isEmpty(cfg.isShowShadow) ? true : cfg.isShowShadow,
+                            shadowSize: isEmpty(cfg.shadowSize) ? 10 : cfg.shadowSize,
                             isShowBg: cfg.isShowBg,
                             allowedMove: cfg.allowedMove,
                             centerOrFollow: (cfg.centerOrFollow || 'center').toLowerCase(),
@@ -144,16 +175,19 @@
                             width: cfg.width || this.cfg.width,
                             height: cfg.height || this.cfg.height,
                             border: cfg.border || this.cfg.border,
-                            borderRadius: isTrue(cfg.borderRadius) ? cfg.borderRadius : this.cfg.borderRadius,
-                            isShowIcon: cfg.isShowIcon === undefined ? this.cfg.isShowIcon : cfg.isShowIcon,
+                            borderRadius: !isEmpty(cfg.borderRadius) ? cfg.borderRadius : this.cfg.borderRadius,
+                            isShowIcon: !isEmpty(cfg.isShowIcon) ? cfg.isShowIcon : this.cfg.isShowIcon,
                             icon: cfg.icon || this.cfg.icon,
+                            allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : this.cfg.allowedFullscreen,
+                            allowedKeyboard: !isEmpty(cfg.allowedKeyboard) ? cfg.allowedKeyboard : this.cfg.allowedKeyboard,
+                            content: cfg.content || this.cfg.content,
                             title: cfg.title || this.cfg.title,
                             buttonAlign: cfg.buttonAlign || this.cfg.buttonAlign,
                             themeColor: cfg.themeColor || this.cfg.themeColor,
-                            isShowShadow: cfg.isShowShadow === undefined ? this.cfg.isShowShadow : cfg.isShowShadow,
-                            shadowSize: isTrue(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
-                            isShowBg: cfg.isShowBg || this.cfg.isShowBg,
-                            allowedMove: cfg.allowedMove || this.cfg.allowedMove,
+                            isShowShadow: !isEmpty(cfg.isShowShadow) ? cfg.isShowShadow : this.cfg.isShowShadow,
+                            shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
+                            isShowBg: !isEmpty(cfg.isShowBg) ? cfg.isShowBg : this.cfg.isShowBg,
+                            allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : this.cfg.allowedMove,
                             centerOrFollow: (cfg.centerOrFollow || this.cfg.centerOrFollow).toLowerCase(),
                             targetSelector: cfg.targetSelector || this.cfg.targetSelector,
                             followPosition: (cfg.followPosition || this.cfg.followPosition).toLowerCase(),
@@ -161,18 +195,19 @@
                         };
                     }
 
+                    var _this = this;
                     this.popupObj.css({
-                        width: this.cfg.width,
-                        height: this.cfg.height,
-                        marginLeft: -Math.floor(this.cfg.width / 2) + "px",
-                        marginTop: -Math.floor(this.cfg.height / 2) + "px",
-                        border: this.cfg.border,
-                        borderRadius: this.cfg.borderRadius
+                        'width': this.cfg.width,
+                        'height': this.cfg.height,
+                        'margin-left': -Math.floor(this.cfg.width / 2) + "px",
+                        'margin-top': -Math.floor(this.cfg.height / 2) + "px",
+                        'border': this.cfg.border,
+                        'border-radius': this.cfg.borderRadius
                     }).find(".lzy_popup_footer").css({
-                        "text-align": cfg.buttonAlign
+                        'text-align': cfg.buttonAlign
                     });
 
-                    this.popupObj.css({"border-color": this.cfg.themeColor});
+                    this.popupObj.css({'border-color': this.cfg.themeColor});
                     this.popupObj.find(".lzy_popup_nav").css({
                         'border-bottom-color': this.cfg.themeColor,
                         'background-color': dimColor(this.cfg.themeColor, .15)
@@ -182,69 +217,138 @@
                         'color': this.cfg.themeColor
                     });
                     this.popupObj.find(".lzy_nav_close").css({'color': this.cfg.themeColor});
+                    this.popupObj.find(".lzy_nav_full").css({'color': this.cfg.themeColor});
+
                     this.bgObj.css('background-color', dimColor(this.cfg.themeColor, .1));
-                    if (this.cfg.isShowShadow) this.popupObj.css({"box-shadow": "0 0 " + this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor});
+                    if (this.cfg.isShowShadow) this.popupObj.css({'box-shadow': "0 0 " + this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor});
                     if (this.cfg.isShowIcon) {
                         if (this.cfg.icon) {
                             this.popupObj.find(".lzy_nav_icon").css({
-                                backgroundImage: 'url(' + this.cfg.icon + ')',
-                                borderRadius: 0,
-                                border: 'none'
+                                'background-image': 'url(' + this.cfg.icon + ')',
+                                'border-radius': 0,
+                                'border': 'none'
                             }).html("");
                         }
                     } else {
                         this.popupObj.find(".lzy_nav_icon").hide();
                     }
+                    if (this.cfg.allowedFullscreen) {
+                        this.popupObj.find(".lzy_nav_full").show().on("click", function () {
+                            if ($(this).hasClass("lzy_nav_full_normal")) {
+                                $(this).addClass("lzy_nav_full_big").removeClass("lzy_nav_full_normal").find("span").html("❐");
+                                _this.fullTemp = {
+                                    top: _this.popupObj.css("top"),
+                                    left: _this.popupObj.css("left"),
+                                    marginTop: _this.popupObj.css("margin-top"),
+                                    marginLeft: _this.popupObj.css("margin-left"),
+                                    full: true
+                                };
+                                _this.popupObj.animate({
+                                    'top': 1,
+                                    'left': 1,
+                                    "margin-top": 0,
+                                    "margin-left": 0,
+                                    'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                                    'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                                }, "fast");
+                            } else {
+                                _this.fullTemp.full = false;
+                                $(this).addClass("lzy_nav_full_normal").removeClass("lzy_nav_full_big").find("span").html("◻");
+                                _this.popupObj.animate({
+                                    'top': _this.fullTemp.top,
+                                    'left': _this.fullTemp.left,
+                                    "margin-top": _this.fullTemp.marginTop,
+                                    "margin-left": _this.fullTemp.marginLeft,
+                                    'width': _this.cfg.width,
+                                    'height': _this.cfg.height
+                                }, "fast");
+                            }
+                        });
+                    }
+
+                    if (this.cfg.allowedKeyboard) {
+                        $(document).on("keyup", function (event) {
+                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            if (e && e.keyCode === 27) _this.closePopup();
+                        });
+                    }
                     if (this.cfg.title) this.popupObj.find(".lzy_nav_title").html(this.cfg.title);
+                    if (this.cfg.content) {
+                        if ($(this.cfg.content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
+                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
+                    }
                     if (this.cfg.allowedMove) {
                         var popupObj = this.popupObj;
-                        var pW = this.cfg.centerOrFollow !== 'center' ? 0 : popupObj.width() / 2;
-                        var pH = this.cfg.centerOrFollow !== 'center' ? 0 : popupObj.height() / 2;
+                        var pW = this.cfg.centerOrFollow !== "center" ? 0 : popupObj.width() / 2;
+                        var pH = this.cfg.centerOrFollow !== "center" ? 0 : popupObj.height() / 2;
                         popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").mousedown(function (e) {
                             var isMove = true;
                             var div_x = e.pageX - popupObj.offset().left - pW;
                             var div_y = e.pageY - popupObj.offset().top - pH;
                             $(document).off("mousemove").mousemove(function (e) {
-                                if (isMove) popupObj.css({"left": e.pageX - div_x, "top": e.pageY - div_y});
+                                if (isMove) popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
                             }).mouseup(function () {
                                 isMove = false;
                             });
                         });
                     }
+
+                    if (isFire()) this.popupObj.find(".lzy_nav_close").css({'font-size': "25px"});
+                    if (isIE()) {
+                        this.popupObj.find(".lzy_nav_title").css('line-height', "33px");
+                        this.popupObj.find(".lzy_nav_full>span").css('font-size', "19px");
+                        this.popupObj.find(".lzy_nav_close").css({
+                            'font-size': "25px",
+                            'line-height': "20px"
+                        });
+                    }
                 },
                 showPopup: function (content, title) {
                     if (this.cfg.isShowBg) this.bgObj.show();
-
-                    var btns = this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
-                    if (btns.length > 0) this.popupObj.find(".lzy_popup_cont").removeClass("lzy_popup_cont_not_footer");
-                    else this.popupObj.find(".lzy_popup_cont").addClass("lzy_popup_cont_not_footer");
-
                     if (this.cfg.targetSelector) {
                         var rect = document.querySelector(this.cfg.targetSelector).getBoundingClientRect();
                         var _this = this, fPos = this.cfg.followPosition;
-                        var setCss = function (val1, val2) {
-                            _this.popupObj.css({"left": val1, "top": val2});
+                        var setFull = function () {
+                            _this.popupObj.css({
+                                'top': 1,
+                                'left': 1,
+                                "margin-top": 0,
+                                "margin-left": 0,
+                                'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                                'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                            });
                         };
                         if (this.cfg.centerOrFollow === 'follow') {
-                            this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
-                            if (fPos.indexOf('top') >= 0) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                            if (fPos.indexOf('bottom') >= 0) setCss(rect.left, rect.bottom + this.cfg.followOffset);
-                            if (fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top);
-                            if (fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top);
-                            if (fPos.indexOf('top') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                            if (fPos.indexOf('top') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                            if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
-                            if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
+                            if (this.fullTemp.full) {
+                                setFull();
+                            } else {
+                                var setCss = function (val1, val2) {
+                                    _this.popupObj.css({'left': val1, 'top': val2});
+                                };
+                                this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
+                                if (fPos.indexOf('top') >= 0) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (fPos.indexOf('bottom') >= 0) setCss(rect.left, rect.bottom + this.cfg.followOffset);
+                                if (fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top);
+                                if (fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top);
+                                if (fPos.indexOf('top') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (fPos.indexOf('top') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
+                                if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
+                            }
                         } else {
-                            this.popupObj.css({
-                                top: rect.top + rect.height / 2,
-                                left: rect.left + rect.width / 2
-                            });
+                            if (this.fullTemp.full) {
+                                setFull();
+                            } else {
+                                this.popupObj.css({
+                                    'top': rect.top + rect.height / 2,
+                                    'left': rect.left + rect.width / 2
+                                });
+                            }
                         }
                     }
                     this.popupObj.find(".lzy_popup_nav").css({
-                        "border-top-right-radius": this.cfg.borderRadius,
-                        "border-top-left-radius": this.cfg.borderRadius
+                        'border-top-right-radius': this.cfg.borderRadius,
+                        'border-top-left-radius': this.cfg.borderRadius
                     });
                     this.popupObj.find(".lzy_popup_footer").css("text-align", this.cfg.buttonAlign);
                     this.popupObj.find(".lzy_footer_btn").css({
@@ -258,12 +362,11 @@
                     });
 
                     if (title) this.popupObj.find(".lzy_nav_title").html(title);
-                    // if ($(content).get(0)) content = $(content).get(0).outerHTML;
-                    if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(content));
-                    else this.popupObj.find(".lzy_popup_cont").html(content);
-                    // this.popupObj.find(".lzy_popup_cont").html(content);
+                    if (content && content !== "") {
+                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(content));
+                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");
+                    }
                     this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");
-
                 },
                 closePopup: function () {
                     var _this = this;
@@ -282,13 +385,14 @@
                         })
                         .hover(function () {
                             tempColor = $(this).css("background-color");
-                            $(this).css("background-color", curBtn.hasClass("lzy_footer_btn_close") ? dimColor(_this.cfg.themeColor, .1) : darkColor(_this.cfg.themeColor, .92));
+                            $(this).css('background-color', curBtn.hasClass("lzy_footer_btn_close") ? dimColor(_this.cfg.themeColor, .1) : darkColor(_this.cfg.themeColor, .92));
                         }, function () {
-                            $(this).css("background-color", tempColor);
+                            $(this).css('background-color', tempColor);
                         });
+                    if (isIE()) curBtn.css({'line-height': "25px"});
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
                     var size = 0, btns = _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
-                    for (var i = 0; i < btns.length; i++) size += btns.eq(i).outerWidth() + parseFloat(btns.eq(i).css("margin-right").replace("px", "")) + parseFloat(btns.eq(i).css("margin-left").replace("px", ""));
+                    for (var i = 0; i < btns.length; i++) size += btns.eq(i).outerWidth() + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
                     if (size > _this.popupObj.width()) _this.setStyle({width: size + 20});
                     return this;
                 }
