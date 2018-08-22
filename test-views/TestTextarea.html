@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ImitateEditor</title>
+    <style>
+        #text1 {
+            width: 600px;
+            background-color: #282923;
+            height: 300px;
+            padding-top: 10px;
+            padding-right: 10px;
+            padding-bottom: 10px;
+            color: #f8f8f2;
+            font-size: 16px;
+        }
+
+        #text2 {
+            width: 600px;
+            background-color: white;
+            height: 300px;
+            padding-top: 10px;
+            padding-right: 10px;
+            padding-bottom: 10px;
+            color: black;
+            font-size: 16px;
+            margin-left: 30px;
+        }
+
+    </style>
+</head>
+<body>
+<H1>仿Sublime,notepad++</H1>
+<textarea type="text" id="text1" class="text"></textarea>
+<textarea type="text" id="text2" class="text"></textarea>
+<div style="width: 100%;height: auto;">
+    <div style="width: 645px;float: left;">
+        <p>1、高亮行标，当光标点击到某行时，对应行<span style="color: red">高亮</span></p>
+        <p>2、行标处滚动联动编辑框，在行标出滚动滑轮，编辑框的滚动调也同时响应</p>
+    </div>
+    <div style="width: 615px;float: left;">
+        <p>1、模仿notepad++的横滚动条，当横向滚动条过长时，左下角的滚动调是显示在行标上的，从而<span>让人感觉行标和编辑框是一体的</span>。</p>
+    </div>
+</div>
+<script src="../js/jquery-1.9.1.min.js"></script>
+<script src="../custom-plugins/custom-imitate-editor/jquery.custom.imitate.editor-v1.0.js"></script>
+<script>
+    $("#text1,#text2").initTextarea();
+
+    $("#text1").val("#text1 {\n" +
+        "  width: 600px;\n" +
+        "  background-color: #282923;\n" +
+        "  height: 300px;\n" +
+        "  padding-top: 10px;\n" +
+        "  padding-right: 10px;\n" +
+        "  padding-bottom: 10px;\n" +
+        "  color: #f8f8f2;\n" +
+        "  font-size: 16px;\n" +
+        "}\n" +
+        "\n" +
+        "#text2 {\n" +
+        "  width: 600px;\n" +
+        "  background-color: white;\n" +
+        "  height: 300px;\n" +
+        "  padding-top: 10px;\n" +
+        "  padding-right: 10px;\n" +
+        "  padding-bottom: 10px;\n" +
+        "  color: black;\n" +
+        "  font-size: 16px;\n" +
+        "  margin-left: 30px;\n" +
+        "}");
+
+    $("#text2").val("1、模仿notepad++的横滚动条，当横向滚动条过长长长长长长长长长长长长长长长长长长长长长长长长长长长长" +
+        "时，\n横向滚动条就会出现，但是左下角的滚动调是显示在行标上的，从而让人感觉行标和编辑框是一体的。\n");
+
+</script>
+</body>
+</html>
