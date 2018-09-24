@@ -173,7 +173,8 @@
                     this._parent.find(".lzy_s_p_content").css({ //宽高要单独赋值是因为 css("width") 使用的是外宽，而实际要内宽
                         'width': this._select.width() - 23,
                         'height': this._select.height(),
-                        'lineHeight': (isIE() ? this._select.height() + 4 : this._select.height()) + "px"
+                        'lineHeight': (isIE() ? this._select.height() + 4 : this._select.height()) + "px",
+                        'color': this._select.css("color")
                     });
                     this._parent.find(".lzy_s_p_arraw").css({
                         "margin-top": this._select.height() / 2 - 2,

@@ -132,7 +132,7 @@ I am liangzhenyu
 
                     $body.append(tipObj.css({
                         top: parentRect.top + parentRect.height / 2,
-                        left: parentRect.left + parentRect.width / 2,
+                        left: parentRect.left + parentRect.width / 2
                     }).html(cont.replace("\n", "<br>")));
 
                     tipObj.css({

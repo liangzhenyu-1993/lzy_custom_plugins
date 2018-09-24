@@ -105,7 +105,6 @@
         IframeOnClick.track(this, callback);
     };
 
-
     $.extend({
         /**
          * jquery方式实现form提交
@@ -130,46 +129,6 @@
             form.appendTo("body").submit();
         }
     });
-
-    /**
-     * 对json自定义排序
-     * @param key 需要排序的索引值
-     * @param order 正序或逆序("arc","desc")
-     * @returns {Array.<*>}
-     */
-    Array.prototype.sortJson = function (key, order) {
-        if (this.length === 0) return [];
-        var n = "desc" === (order || "").toLowerCase() ? 1 : -1;
-        var code = /^[\u4e00-\u9fa5]/.test(this[0][key]) ? "zh" : "en";
-        return this.sort(function (a, b) {
-            if (isNaN(b[key])) {
-                return b[key].localeCompare(a[key], code) * n;
-            } else {
-                return (b[key] - a[key]) * n;
-            }
-        });
-    };
-
-    /**
-     * 对json自定义排序,打乱排序
-     * @returns {Array.<*>}
-     */
-    Array.prototype.shuffleJson = function () {
-        return this.sort(function () {
-            return Math.random() - 0.5;
-        })
-    };
-
-    /**
-     * 对json自定义的字段进行相加
-     * @returns {number} 返回总和
-     */
-    Array.prototype.sumJson = function (key) {
-        if (this.length === 0 || isNaN(this[0][key])) return 0;
-        var sum = 0;
-        for (var i = 0; i < this.length; i++) sum += this[i][key];
-        return sum;
-    };
 
 })(jQuery, window, document);
 
@@ -201,18 +160,6 @@ window.getDateBeforeHour = function (num) {
     var day = date.getDate();
     var hour = date.getHours();
     return year + "-" + (mon < 10 ? ('0' + mon) : mon) + "-" + (day < 10 ? ('0' + day) : day) + " " + (hour < 10 ? ('0' + hour) : hour) + ":00";
-};
-
-
-/**
- * 格式数字,千位
- * @param num 数
- * @returns {string}
- */
-window.toThd = function (num) {
-    if (isNaN(num)) return "NaN";
-    num = num.toString();
-    return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
 };
 
 
@@ -261,3 +208,68 @@ window.toRGB = function (color) {
         return "rgb(" + rgbObj.r + "," + rgbObj.g + "," + rgbObj.b + ")";
     }
 };
+
+/**
+ * 对 json 自定义排序
+ * @param key 需要排序的索引值
+ * @param order 正序或逆序("arc","desc")，默认：正序
+ * 使用例子：[{key:'一'},{key:'二'},{key:'三'}]，正序转换后：[{key:'二'},{key:'三'},{key:'一'}]
+ * 注：该方法主要是对 Array.sort() 方法的进一步扩展
+ * @returns {Array.<*>}
+ */
+Array.prototype.sortJson = function (key, order) {
+    if (this.length === 0) return [];
+    var n = "desc" === (order || "").toLowerCase() ? 1 : -1;
+    var code = /^[\u4e00-\u9fa5]/.test(this[0][key]) ? "zh" : "en";
+    return this.sort(function (a, b) {
+        if (isNaN(b[key])) {
+            return b[key].localeCompare(a[key], code) * n;
+        } else {
+            return (b[key] - a[key]) * n;
+        }
+    });
+};
+
+/**
+ * 对数组自定义排序,打乱排序
+ * @returns {Array.<*>}
+ */
+Array.prototype.shuffleArray = function () {
+    return this.sort(function () {
+        return Math.random() - 0.5;
+    })
+};
+
+/**
+ * 对json自定义的字段进行相加
+ * @param key 需要相加的字段的键名称，如:[{val:12},{val:23},...]，数组每个项是一个json对象；
+ *      如果不传参将视为相加自身，如：[12,23,...]，数组每项是数字
+ * @returns {number} 返回总和
+ */
+Array.prototype.sumArray = function (key) {
+    if (this.length === 0) return 0;
+    var sum = 0;
+    if (key) {
+        if (isNaN(this[0][key])) return 0;
+        for (var i = 0; i < this.length; i++) sum += this[i][key];
+    } else {
+        if (isNaN(this[0])) return 0;
+        for (var i = 0; i < this.length; i++) sum += this[i];
+    }
+    return sum;
+};
+
+/**
+ * 格式数字,千位
+ * @param val 数
+ * @returns {string}
+ */
+var dealToThd = function (val) {
+    var num = val ? val : this;
+    if (isNaN(num)) return "NaN";
+    num = num.toString();
+    return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
+};
+window.toThd = dealToThd;//添加方法在全局变量中
+String.prototype.toThd = dealToThd;//扩展String类型的方法，主要是因为平常开发者的类型不固定，数字类型会转在字符串类型上
+Number.prototype.toThd = dealToThd;//所以为了兼容两者，两种类型都添加上
