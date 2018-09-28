@@ -132,6 +132,7 @@
 }
 
 .lzy_nav_close {
+    position: relative;
     width: 18px;
     height: 18px;
     float: right;
@@ -141,13 +142,53 @@
     margin-right: 8px;
     line-height: 17px;
     text-align: center;
+}
+
+.lzy_nav_close_rotate {
     -webkit-transition: -webkit-transform .5s ease-out;
     transition: transform .5s ease-out;
 }
 
-.lzy_nav_close:hover {
+.lzy_nav_close_rotate:hover {
     -webkit-transform: rotate(180deg); /* Safari 和 Chrome */
     transform: rotate(180deg);
+}
+
+.lzy_nav_close_dazzling:after {
+    content: "×";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    line-height: 17px;
+    opacity: 0;
+}
+
+.lzy_nav_close_dazzling:hover:after {
+    -webkit-animation: close_full_Zoomin 1s infinite;
+    animation: close_full_Zoomin 1s infinite;
+}
+
+@-webkit-keyframes close_full_Zoomin {
+    0% {
+        opacity: 0
+    }
+    5% {
+        opacity: 1
+    }
+    100% {
+        -ms-transform: scale(2.5); /* IE 9 */
+        -moz-transform: scale(2.5); /* Firefox */
+        -webkit-transform: scale(2.5);
+        transform: scale(2.5);
+        opacity: 0
+    }
+}
+
+.lzy_nav_close_enlarge:hover {
+    -webkit-transform: scale(1.4); /* Safari 和 Chrome */
+    transform: scale(1.4);
 }
 
 .lzy_popup_cont {

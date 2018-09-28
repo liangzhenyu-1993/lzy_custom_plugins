@@ -230,24 +230,7 @@
         }
 
 
-        var mypop25, mypop26, mypop27, mypop28;
-
-        function showPopup25() {
-            mypop25.showPopup();
-        }
-
-        function showPopup26() {
-            mypop26.showPopup("#content");
-        }
-
-        function showPopup27() {
-            mypop27.showPopup();
-        }
-
-        function showPopup28() {
-            mypop28.showPopup("放大全屏功能是一位热心网友建议，感谢这位网友！");
-        }
-
+        var mypop25, mypop26, mypop27, mypop28, mypop29;
         $(function () {
             // ------------------------------------------------------
             if (!mypop25) {
@@ -288,7 +271,48 @@
                     alert("点击了确定");
                 }).addButton("取消");
             }
+
+            // ------------------------------------------------------
+            if (!mypop29) {
+                mypop29 = $.initPopup().addButton("确定", function () {
+                    alert("点击了确定");
+                }).addButton("取消");
+            }
+            $("#effect").on("change", function () {
+                var types = {
+                    "dazzling": LzyCustomPopup.BUTTON_DAZZLING,
+                    "rotate": LzyCustomPopup.BUTTON_ROTATE,
+                    "enlarge": LzyCustomPopup.BUTTON_ENLARGE
+                };
+
+                mypop29.setStyle({
+                    closeBtnEffect: types[$(this).val()]
+                })
+            });
+            //---------------------------------------------------------
+
         });
+
+
+        function showPopup25() {
+            mypop25.showPopup();
+        }
+
+        function showPopup26() {
+            mypop26.showPopup("#content");
+        }
+
+        function showPopup27() {
+            mypop27.showPopup();
+        }
+
+        function showPopup28() {
+            mypop28.showPopup("放大全屏功能是一位热心网友建议，感谢这位网友！");
+        }
+
+        function showPopup29() {
+            mypop29.showPopup("右上关闭按键的悬停效果");
+        }
     </script>
 </head>
 <body>
@@ -349,6 +373,14 @@
         <td colspan="2"><input type="button" id="btn25" value="使用节点作内容2" onclick="showPopup26();"></td>
         <td colspan="2"><input type="button" id="btn26" value="使用节点作内容3" onclick="showPopup27();"></td>
         <td><input type="button" id="btn27" value="放大全屏" onclick="showPopup28();"></td>
+        <td>
+            <select id="effect">
+                <option value="dazzling">炫影</option>
+                <option value="rotate">旋转</option>
+                <option value="enlarge">放大</option>
+            </select>
+            <input type="button" id="btn28" value="关闭按键" onclick="showPopup29();">
+        </td>
     </tr>
     </tbody>
 </table>
