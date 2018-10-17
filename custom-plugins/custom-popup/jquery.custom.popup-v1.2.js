@@ -44,8 +44,9 @@
         buttonAlign:按键对齐方式，left,center和right三种方式,
         isShowBg:是否显示背景,默认:false,
         allowedMove:是否允许移动,默认:false,
-        targetSelector:目标选择器，用于弹框设置位置的相对节点，默认：body节点(居中显示)，
-        centerOrFollow:弹框类型设置，“center”和“follow”两种类型，默认“center”，中心显示或跟随指定目标节点（targetSelector）显示,
+        targetSelector:目标选择器，用于弹框设置位置的相对节点，默认：body节点(给 insideOrFollow 为 "inside" 时，弹框在body内部)，
+        insideOrFollow:弹框类型设置，“inside”和“follow”两种类型，默认“inside”，内部显示或跟随指定目标节点（targetSelector）显示,
+        insidePosition:弹框显示的位置，默认中间：center，可选值：top，bottom,left，right及组合方位词，也可以是"x,y"的绝对定位,
         followPosition:弹框跟随目标相对位置，默认："bottom right"(右下) ,
         followOffset: 弹框跟随目标相对偏差位置，默认偏移10px
     }
@@ -165,8 +166,9 @@
                             shadowSize: isEmpty(cfg.shadowSize) ? 10 : cfg.shadowSize,
                             isShowBg: cfg.isShowBg,
                             allowedMove: cfg.allowedMove,
-                            centerOrFollow: (cfg.centerOrFollow || 'center').toLowerCase(),
                             targetSelector: cfg.targetSelector || 'body',
+                            insideOrFollow: (cfg.insideOrFollow || 'inside').toLowerCase(),
+                            insidePosition: (cfg.insidePosition || 'center').toLowerCase(),
                             followPosition: (cfg.followPosition || 'right bottom').toLowerCase(),
                             followOffset: cfg.followOffset || 10
                         };
@@ -188,8 +190,9 @@
                             shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
                             isShowBg: !isEmpty(cfg.isShowBg) ? cfg.isShowBg : this.cfg.isShowBg,
                             allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : this.cfg.allowedMove,
-                            centerOrFollow: (cfg.centerOrFollow || this.cfg.centerOrFollow).toLowerCase(),
                             targetSelector: cfg.targetSelector || this.cfg.targetSelector,
+                            insideOrFollow: (cfg.insideOrFollow || this.cfg.insideOrFollow).toLowerCase(),
+                            insidePosition: (cfg.insidePosition || this.cfg.insidePosition).toLowerCase(),
                             followPosition: (cfg.followPosition || this.cfg.followPosition).toLowerCase(),
                             followOffset: cfg.followOffset || this.cfg.followOffset
                         };
@@ -279,8 +282,8 @@
                     }
                     if (this.cfg.allowedMove) {
                         var popupObj = this.popupObj;
-                        var pW = this.cfg.centerOrFollow !== "center" ? 0 : popupObj.width() / 2;
-                        var pH = this.cfg.centerOrFollow !== "center" ? 0 : popupObj.height() / 2;
+                        var pW = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.width() / 2;
+                        var pH = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.height() / 2;
                         popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").mousedown(function (e) {
                             var isMove = true;
                             var div_x = e.pageX - popupObj.offset().left - pW;
@@ -307,7 +310,7 @@
                     if (this.cfg.isShowBg) this.bgObj.show();
                     if (this.cfg.targetSelector) {
                         var rect = document.querySelector(this.cfg.targetSelector).getBoundingClientRect();
-                        var _this = this, fPos = this.cfg.followPosition;
+                        var _this = this, fPos = this.cfg.followPosition, iPos = this.cfg.insidePosition;
                         var setFull = function () {
                             _this.popupObj.css({
                                 'top': 1,
@@ -318,31 +321,47 @@
                                 'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
                             });
                         };
-                        if (this.cfg.centerOrFollow === 'follow') {
+                        var setCss = function (val1, val2) {
+                            _this.popupObj.css({'left': val1, 'top': val2});
+                        };
+                        var checkPos = function () {
+                            var size = 0;
+                            for (var i = 1; i < arguments.length; i++) {
+                                if (arguments[0].indexOf(arguments[i])) size++;
+                            }
+                            return size === arguments.length - 1;
+                        };
+                        if (this.cfg.insideOrFollow === 'follow') {
                             if (this.fullTemp.full) {
                                 setFull();
                             } else {
-                                var setCss = function (val1, val2) {
-                                    _this.popupObj.css({'left': val1, 'top': val2});
-                                };
                                 this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
-                                if (fPos.indexOf('top') >= 0) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (fPos.indexOf('bottom') >= 0) setCss(rect.left, rect.bottom + this.cfg.followOffset);
-                                if (fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top);
-                                if (fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top);
-                                if (fPos.indexOf('top') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (fPos.indexOf('top') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('left') >= 0) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
-                                if (fPos.indexOf('bottom') >= 0 && fPos.indexOf('right') >= 0) setCss(rect.right + this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
+                                if (checkPos(fPos, "top")) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (checkPos(fPos, "bottom")) setCss(rect.left, rect.bottom + this.cfg.followOffset);
+                                if (checkPos(fPos, "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top);
+                                if (checkPos(fPos, "right")) setCss(rect.right + this.cfg.followOffset, rect.top);
+                                if (checkPos(fPos, "top", "right")) setCss(rect.right + this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (checkPos(fPos, "top", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
+                                if (checkPos(fPos, "bottom", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
+                                if (checkPos(fPos, "bottom", "right")) setCss(rect.right + this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
                             }
                         } else {
                             if (this.fullTemp.full) {
                                 setFull();
                             } else {
-                                this.popupObj.css({
-                                    'top': rect.top + rect.height / 2,
-                                    'left': rect.left + rect.width / 2
-                                });
+                                if ("toprightbottomleftcenter".indexOf(iPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
+                                    if (checkPos(iPos, "top")) setCss(rect.left + rect.width / 2, rect.top + 1);
+                                    if (checkPos(iPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - 1);
+                                    if (checkPos(iPos, "left")) setCss(rect.left + 1, rect.top + rect.height / 2);
+                                    if (checkPos(iPos, "right")) setCss(rect.left + rect.width - 1, rect.top + rect.height / 2);
+                                    if (checkPos(iPos, "center")) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                                    if (checkPos(iPos, "top", "right")) setCss(rect.left + rect.width, rect.top + 1);
+                                    if (checkPos(iPos, "top", "left")) setCss(rect.left + 1, rect.top + 1);
+                                    if (checkPos(iPos, "bottom", "left")) setCss(rect.left + 1, rect.top + rect.height);
+                                    if (checkPos(iPos, "bottom", "right")) setCss(rect.left + rect.width, rect.top + rect.height);
+                                } else {
+
+                                }
                             }
                         }
                     }
@@ -363,7 +382,7 @@
 
                     if (title) this.popupObj.find(".lzy_nav_title").html(title);
                     if (content && content !== "") {
-                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(content));
+                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").html($(content));
                         else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");
                     }
                     this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");

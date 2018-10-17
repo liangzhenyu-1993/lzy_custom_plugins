@@ -192,8 +192,9 @@
                 if (isIE() || navigator.userAgent.indexOf("Firefox") > -1) listSonWidth = (_this._select.width() - _this._select.css("border-width").replace("px", "") * 2 - 15) + "px"; //火狐,ie 的滚动条的宽为15px
 
                 var setList = function () {
+                    _this._list.empty();
                     var options = _this._select.find("option");
-                    for (var i = _this._size; i < options.length; i++) {
+                    for (var i = 0; i < options.length; i++) {
                         var attrs = options[i].attributes;
                         var $son = $("<div></div>").attr("title", options[i].text).append(options[i].text);
                         if (isCopyStyle) {

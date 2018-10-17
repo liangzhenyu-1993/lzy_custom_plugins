@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index3</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .inner {
+            position: absolute;
+            left: 0;
+            top: 200px;
+            width: 500px;
+            height: 300px;
+            background-color: blue;
+        }
+    </style>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../custom-plugins/custom-tip/jquery.custom.tip.js"></script>
+
+</head>
+<body>
+<div class="inner"></div>
+
+<input type="button" value="打开(显示等待图标)" onclick="showMyTip1()">
+<input type="button" value="打开(隐藏等待图标)" onclick="showMyTip2()">
+<input type="button" value="打开(Body作父节点)" onclick="showMyTip3()">
+<input type="button" value="打开(Div作父节点)" onclick="showMyTip4()">
+<input type="button" value="打开(不自动隐藏)" onclick="showMyTip5()">
+<input type="button" value="打开(自动隐藏)" onclick="showMyTip6()">
+
+<input type="button" value="关闭" onclick="closeMyTip()">
+
+</body>
+</html>
+<script>
+    var myTip = $.CoustomTip();
+
+    function showMyTip1() {
+        myTip.setCfg({showIcon: true}).showTip("Loading...");
+    }
+
+    function showMyTip2() {
+        myTip.setCfg({showIcon: false}).showTip("Loading...");
+    }
+
+    function showMyTip3() {
+        myTip.setCfg({parent: "body"}).showTip("Loading...");
+    }
+
+    function showMyTip4() {
+        myTip.setCfg({parent: ".inner"}).showTip("Loading...");
+    }
+
+    function showMyTip5() {
+        myTip.setCfg({autoHide: false}).showTip("Loading...");
+    }
+
+    function showMyTip6() {
+        myTip.setCfg({autoHide: true}).showTip("Loading...");
+    }
+
+    function closeMyTip() {
+        myTip.closeTip();
+    }
+</script>
