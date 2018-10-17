@@ -38,6 +38,7 @@
         icon:图标的图片（可以是路径，也可以是图片base64编码）,
         allowedFullscreen：是否允许全屏，即是否添加全屏按键，默认值：false,
         allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
+        closeBtnEffect:右上关闭按键的悬停效果,目前有"dazzling":炫影效果,"rotate":旋转效果,"enlarge":放大效果;默认炫影效果
         content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
             简而言之就是不常改变的内容（一般都是配置了样式的节点）放在这，经常改变的内容（一般都是一句疑问句）就放在showPopup方法中。
         title:弹框标题,
@@ -52,6 +53,11 @@
     }
  */
 ;(function ($, window, document, undefined) {
+    window.LzyCustomPopup = {
+        BUTTON_DAZZLING: "dazzling",//炫影效果
+        BUTTON_ROTATE: "rotate",//旋转效果
+        BUTTON_ENLARGE: "enlarge"//放大效果
+    };
     $.extend({
         initPopup: function (cfg) {
             var toRGB = function (color) {
@@ -158,6 +164,7 @@
                             icon: cfg.icon || null,
                             allowedFullscreen: cfg.allowedFullscreen,
                             allowedKeyboard: isEmpty(cfg.allowedKeyboard) ? true : cfg.allowedKeyboard,
+                            closeBtnEffect: cfg.closeBtnEffect || LzyCustomPopup.BUTTON_DAZZLING,
                             content: cfg.content || null,
                             title: cfg.title || null,
                             buttonAlign: cfg.buttonAlign || 'right',
@@ -182,6 +189,7 @@
                             icon: cfg.icon || this.cfg.icon,
                             allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : this.cfg.allowedFullscreen,
                             allowedKeyboard: !isEmpty(cfg.allowedKeyboard) ? cfg.allowedKeyboard : this.cfg.allowedKeyboard,
+                            closeBtnEffect: cfg.closeBtnEffect || this.cfg.closeBtnEffect,
                             content: cfg.content || this.cfg.content,
                             title: cfg.title || this.cfg.title,
                             buttonAlign: cfg.buttonAlign || this.cfg.buttonAlign,
@@ -268,6 +276,28 @@
                             }
                         });
                     }
+
+                    if (this.cfg.closeBtnEffect) {
+                        var closeBtnClass,
+                            closeBtnClasses = ["lzy_nav_close_dazzling", "lzy_nav_close_rotate", "lzy_nav_close_enlarge"];
+                        switch (this.cfg.closeBtnEffect) {
+                            case LzyCustomPopup.BUTTON_DAZZLING:
+                                closeBtnClass = closeBtnClasses[0];
+                                break;
+                            case LzyCustomPopup.BUTTON_ROTATE:
+                                closeBtnClass = closeBtnClasses[1];
+                                break;
+                            case LzyCustomPopup.BUTTON_ENLARGE:
+                                closeBtnClass = closeBtnClasses[2];
+                                break;
+                            default:
+                                closeBtnClass = closeBtnClasses[0];
+                                break
+                        }
+                        for (var i = 0; i < closeBtnClasses.length; i++) this.popupObj.find(".lzy_nav_close").removeClass(closeBtnClasses[i]);
+                        this.popupObj.find(".lzy_nav_close").addClass(closeBtnClass);
+                    }
+
 
                     if (this.cfg.allowedKeyboard) {
                         $(document).on("keyup", function (event) {
