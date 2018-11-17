@@ -177,7 +177,7 @@
                         'color': this._select.css("color")
                     });
                     this._parent.find(".lzy_s_p_arraw").css({
-                        "margin-top": this._select.height() / 2 - 2,
+                        "margin-top": this._select.height() / 2 - this._parent.find(".lzy_s_p_arraw").height() / 2,
                         "color": this._select.css("border-left-color")
                     });
 

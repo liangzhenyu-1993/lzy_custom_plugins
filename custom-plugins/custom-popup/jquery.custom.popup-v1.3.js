@@ -5,7 +5,7 @@
 */
 
 /*
-插件-弹框提示-v1.1(可以展示大内容，也可以是确认框)
+插件-弹框提示-v1.3(可以展示大内容，也可以是确认框)
 使用方法说明：
     1.此插件基于jQuery编写，使用时需要先导入jQuery
     2.获取对象
@@ -21,10 +21,19 @@
         title:标题(可选)，若无则使用 cfg 配置中的标题设置，若cfg配置中也没有设置将使用默认值：“消息”
     5.关闭提示框
         myPop.closePopup();
-    6.添加底框按钮
+    6.添加框低按钮
         myPop.addButton(btnName,callback); //需要注意的是添加的按键过多（弹框的宽不足容纳所有按键）时，将自动适应设置弹框的宽来容纳所有按键
         btnName:按键的名称,注：添加的名称含有“关闭，取消”等的将带有点击关闭弹框的事件，
         callback:回调函数(按键点击事件在这里，就是说每添加一个按键都自动绑定了一个点击事件)，函数中的 this->当前弹框对象
+    7.移除框低按钮
+        myPop.removeButton(nameOrIndex);
+        nameOrIndex:按键的名称或者按键所在的下标
+    8.获取本弹框自身绝对位置相关值
+        myPop.getRect();
+        返回值:{top,left,bottom,right,width,height}
+    9.关闭右上按键事件
+        myPop.onClose(callback);
+        callback:回调函数
  参数说明：
     cfg:{
         width:弹框的长,
@@ -36,20 +45,19 @@
         shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为10px，
         isShowIcon:是否显示左上图标,默认:true,
         icon:图标的图片（可以是路径，也可以是图片base64编码）,
-        allowedFullscreen：是否允许全屏，即是否添加全屏按键，默认值：false,
+        allowedFullscreen:是否允许全屏，即是否添加全屏按键，默认值：false,
         allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
-        closeBtnEffect:右上关闭按键的悬停效果,目前有"dazzling":炫影效果,"rotate":旋转效果,"enlarge":放大效果;默认炫影效果
+        closeBtnEffect:右上关闭按键的悬停效果,目前有"dazzling"：炫影效果,"rotate"：旋转效果,"enlarge"：放大效果;默认炫影效果
         content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
             简而言之就是不常改变的内容（一般都是配置了样式的节点）放在这，经常改变的内容（一般都是一句疑问句）就放在showPopup方法中。
         title:弹框标题,
         buttonAlign:按键对齐方式，left,center和right三种方式,
-        isShowBg:是否显示背景,默认:false,
-        allowedMove:是否允许移动,默认:false,
-        targetSelector:目标选择器，用于弹框设置位置的相对节点，默认：body节点(给 insideOrFollow 为 "inside" 时，弹框在body内部)，
-        insideOrFollow:弹框类型设置，“inside”和“follow”两种类型，默认“inside”，内部显示或跟随指定目标节点（targetSelector）显示,
-        insidePosition:弹框显示的位置，默认中间：center，可选值：top，bottom,left，right及组合方位词，也可以是"x,y"的绝对定位,
-        followPosition:弹框跟随目标相对位置，默认："bottom right"(右下) ,
-        followOffset: 弹框跟随目标相对偏差位置，默认偏移10px
+        isShowBg:是否显示背景,默认：false,
+        allowedMove:是否允许移动,默认：false,
+        targetSelector:目标选择器，用于弹框设置位置的相对节点，默认：body节点，
+        insideOrFollow:弹框类型设置，“inside”和“follow”两种类型(内嵌和跟随)，默认“inside”，内嵌或跟随(targetSelector)显示,
+        relativePosition:弹框相对目标选择器的位置，insideOrFollow值为“inside”时默认中间：center，可选值：top，bottom,left，right及组合方位词，也可以是"x,y"的绝对定位；insideOrFollow值为“follow”时默认右下：right bottom，可选值：top，bottom,left，right及组合方位词
+        relativeOffset: 弹框与目标相对偏差位置，默认偏移10px
     }
  */
 ;(function ($, window, document, undefined) {
@@ -60,6 +68,11 @@
     };
     $.extend({
         initPopup: function (cfg) {
+            /**
+             * 将颜色值转为 rgb 类型的值（不支持rgba）
+             * @param color 颜色值，rgb,16进制值，英文名称
+             * @returns {*} rgb值
+             */
             var toRGB = function (color) {
                 eval(function (p, a, c, k, e, d) {
                     e = function (c) {
@@ -101,17 +114,33 @@
                     return "rgb(" + rgbObj.r + "," + rgbObj.g + "," + rgbObj.b + ")";
                 }
             };
+            /**
+             * 转化为淡颜色
+             * @param color rgba值或rgb值
+             * @param opacity 透明度
+             * @returns {string} rgba值
+             */
             var dimColor = function (color, opacity) {
                 var opa = opacity || 0.5;
                 if (color.indexOf("rgba") >= 0) return color.substr(0, color.lastIndexOf(",")) + "," + parseFloat(color.substr(color.lastIndexOf(",") + 1, color.lastIndexOf(")") - 1)) * opa + ")";
                 var arrRgb = toRGB(color).replace("rgb(", "").replace(")", "").split(",");
                 return "rgba(" + arrRgb[0] + "," + arrRgb[1] + "," + arrRgb[2] + "," + opa + ")";
             };
+            /**
+             * 转化为暗颜色
+             * @param color rgb值
+             * @param oft
+             * @returns {string}
+             */
             var darkColor = function (color, oft) {
                 oft = oft || 0.5;
                 var arrRgb = toRGB(color).replace("rgb(", "").replace(")", "").split(",");
                 return "rgb(" + parseInt(arrRgb[0] * oft) + "," + parseInt(arrRgb[1] * oft) + "," + parseInt(arrRgb[2] * oft) + ")";
             };
+            /**
+             * 判断是否是IE家族的浏览器
+             * @returns {*}
+             */
             var isIE = function () {
                 var userAgent = navigator.userAgent;
                 var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
@@ -131,15 +160,24 @@
                 if (isIE11) return 11;
                 return false;
             };
+            /**
+             * 判断是否是火狐浏览器
+             * @returns {boolean}
+             */
             var isFire = function () {
                 return navigator.userAgent.indexOf("Firefox") > -1;
             };
+            /**
+             * 弹框的主体入口方法
+             * @param cfg 配置
+             */
             var lzyPopup = function (cfg) {
                 var _this = this;
                 this.popupObj = null;
                 this.bgObj = null;
                 this.cfg = null;
                 this.fullTemp = {full: false};
+                this.closeEvent = null;
                 this.bgObj = $("<div class='lzy_custom_bg'></div>").appendTo("body");
                 this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div>" +
                     "<div class='lzy_nav_title'>消息</div><div class='lzy_nav_close'>×</div><div class='lzy_nav_full lzy_nav_full_normal'><span>◻</span></div></div>" +
@@ -152,9 +190,11 @@
                 setStyle: function (cfg, status) {
                     cfg = cfg || {};
                     var isEmpty = function (val) {
+                        //该方法的作用主要是避免传入参数为 0  时的判断却为false
                         return val === null || typeof(val) === "undefined";
                     };
                     if (status) {
+                        //全新插入参数，未配置的使用默认参
                         this.cfg = {
                             width: cfg.width || 350,
                             height: cfg.height || 200,
@@ -175,11 +215,12 @@
                             allowedMove: cfg.allowedMove,
                             targetSelector: cfg.targetSelector || 'body',
                             insideOrFollow: (cfg.insideOrFollow || 'inside').toLowerCase(),
-                            insidePosition: (cfg.insidePosition || 'center').toLowerCase(),
-                            followPosition: (cfg.followPosition || 'right bottom').toLowerCase(),
-                            followOffset: cfg.followOffset || 10
+                            relativePosition: (cfg.relativePosition || 'center').toLowerCase(),
+                            relativeOffset: isEmpty(cfg.relativeOffset) ? 10 : cfg.relativeOffset
                         };
+                        if (!cfg.relativePosition && this.cfg.insideOrFollow === 'follow') this.cfg.relativePosition = "right bottom";
                     } else {
+                        //追加插入参数，未配置的使用默认参
                         this.cfg = {
                             width: cfg.width || this.cfg.width,
                             height: cfg.height || this.cfg.height,
@@ -200,12 +241,11 @@
                             allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : this.cfg.allowedMove,
                             targetSelector: cfg.targetSelector || this.cfg.targetSelector,
                             insideOrFollow: (cfg.insideOrFollow || this.cfg.insideOrFollow).toLowerCase(),
-                            insidePosition: (cfg.insidePosition || this.cfg.insidePosition).toLowerCase(),
-                            followPosition: (cfg.followPosition || this.cfg.followPosition).toLowerCase(),
-                            followOffset: cfg.followOffset || this.cfg.followOffset
+                            relativePosition: (cfg.relativePosition || this.cfg.relativePosition).toLowerCase(),
+                            relativeOffset: !isEmpty(cfg.relativeOffset) ? cfg.relativeOffset : this.cfg.relativeOffset
                         };
                     }
-
+                    //配置样式
                     var _this = this;
                     this.popupObj.css({
                         'width': this.cfg.width,
@@ -217,11 +257,12 @@
                     }).find(".lzy_popup_footer").css({
                         'text-align': cfg.buttonAlign
                     });
-
                     this.popupObj.css({'border-color': this.cfg.themeColor});
                     this.popupObj.find(".lzy_popup_nav").css({
                         'border-bottom-color': this.cfg.themeColor,
-                        'background-color': dimColor(this.cfg.themeColor, .15)
+                        'background-color': dimColor(this.cfg.themeColor, .15),
+                        'border-top-right-radius': this.cfg.borderRadius,
+                        'border-top-left-radius': this.cfg.borderRadius
                     });
                     this.popupObj.find(".lzy_nav_icon").css({
                         'border-color': this.cfg.themeColor,
@@ -229,11 +270,11 @@
                     });
                     this.popupObj.find(".lzy_nav_close").css({'color': this.cfg.themeColor});
                     this.popupObj.find(".lzy_nav_full").css({'color': this.cfg.themeColor});
-
                     this.bgObj.css('background-color', dimColor(this.cfg.themeColor, .1));
                     if (this.cfg.isShowShadow) this.popupObj.css({'box-shadow': "0 0 " + this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor});
                     if (this.cfg.isShowIcon) {
                         if (this.cfg.icon) {
+                            //更换图标
                             this.popupObj.find(".lzy_nav_icon").css({
                                 'background-image': 'url(' + this.cfg.icon + ')',
                                 'border-radius': 0,
@@ -243,77 +284,23 @@
                     } else {
                         this.popupObj.find(".lzy_nav_icon").hide();
                     }
-                    if (this.cfg.allowedFullscreen) {
-                        this.popupObj.find(".lzy_nav_full").show().on("click", function () {
-                            if ($(this).hasClass("lzy_nav_full_normal")) {
-                                $(this).addClass("lzy_nav_full_big").removeClass("lzy_nav_full_normal").find("span").html("❐");
-                                _this.fullTemp = {
-                                    top: _this.popupObj.css("top"),
-                                    left: _this.popupObj.css("left"),
-                                    marginTop: _this.popupObj.css("margin-top"),
-                                    marginLeft: _this.popupObj.css("margin-left"),
-                                    full: true
-                                };
-                                _this.popupObj.animate({
-                                    'top': 1,
-                                    'left': 1,
-                                    "margin-top": 0,
-                                    "margin-left": 0,
-                                    'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                                    'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
-                                }, "fast");
-                            } else {
-                                _this.fullTemp.full = false;
-                                $(this).addClass("lzy_nav_full_normal").removeClass("lzy_nav_full_big").find("span").html("◻");
-                                _this.popupObj.animate({
-                                    'top': _this.fullTemp.top,
-                                    'left': _this.fullTemp.left,
-                                    "margin-top": _this.fullTemp.marginTop,
-                                    "margin-left": _this.fullTemp.marginLeft,
-                                    'width': _this.cfg.width,
-                                    'height': _this.cfg.height
-                                }, "fast");
-                            }
-                        });
-                    }
-
+                    //是否配置的关闭按键的样式
                     if (this.cfg.closeBtnEffect) {
-                        var closeBtnClass,
-                            closeBtnClasses = ["lzy_nav_close_dazzling", "lzy_nav_close_rotate", "lzy_nav_close_enlarge"];
-                        switch (this.cfg.closeBtnEffect) {
-                            case LzyCustomPopup.BUTTON_DAZZLING:
-                                closeBtnClass = closeBtnClasses[0];
-                                break;
-                            case LzyCustomPopup.BUTTON_ROTATE:
-                                closeBtnClass = closeBtnClasses[1];
-                                break;
-                            case LzyCustomPopup.BUTTON_ENLARGE:
-                                closeBtnClass = closeBtnClasses[2];
-                                break;
-                            default:
-                                closeBtnClass = closeBtnClasses[0];
-                                break
-                        }
-                        for (var i = 0; i < closeBtnClasses.length; i++) this.popupObj.find(".lzy_nav_close").removeClass(closeBtnClasses[i]);
-                        this.popupObj.find(".lzy_nav_close").addClass(closeBtnClass);
+                        var closeCss,
+                            closeCsses = ["lzy_nav_close_dazzling", "lzy_nav_close_rotate", "lzy_nav_close_enlarge"];
+                        if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_DAZZLING) closeCss = closeCsses[0];
+                        else if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_ROTATE) closeCss = closeCsses[1];
+                        else if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_ENLARGE) closeCss = closeCsses[2];
+                        else closeCss = closeCsses[0];
+                        for (var i = 0; i < closeCsses.length; i++) this.popupObj.find(".lzy_nav_close").removeClass(closeCsses[i]);
+                        this.popupObj.find(".lzy_nav_close").addClass(closeCss);
                     }
-
-
-                    if (this.cfg.allowedKeyboard) {
-                        $(document).on("keyup", function (event) {
-                            var e = event || window.event || arguments.callee.caller.arguments[0];
-                            if (e && e.keyCode === 27) _this.closePopup();
-                        });
-                    }
-                    if (this.cfg.title) this.popupObj.find(".lzy_nav_title").html(this.cfg.title);
-                    if (this.cfg.content) {
-                        if ($(this.cfg.content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
-                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
-                    }
+                    //是否允许拖动
                     if (this.cfg.allowedMove) {
                         var popupObj = this.popupObj;
                         var pW = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.width() / 2;
                         var pH = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.height() / 2;
+                        //拖动事件
                         popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").mousedown(function (e) {
                             var isMove = true;
                             var div_x = e.pageX - popupObj.offset().left - pW;
@@ -325,7 +312,58 @@
                             });
                         });
                     }
+                    //是否允许放大全屏
+                    if (this.cfg.allowedFullscreen) {
+                        this.popupObj.find(".lzy_nav_full").show().on("click", function () {
+                            if ($(this).hasClass("lzy_nav_full_normal")) {
+                                $(this).addClass("lzy_nav_full_big").removeClass("lzy_nav_full_normal").find("span").html("❐");
+                                _this.fullTemp = {
+                                    top: _this.popupObj.css("top"),
+                                    left: _this.popupObj.css("left"),
+                                    marginTop: _this.popupObj.css("margin-top"),
+                                    marginLeft: _this.popupObj.css("margin-left"),
+                                    full: true
+                                };
+                                //放大动画
+                                _this.popupObj.animate({
+                                    'top': 1,
+                                    'left': 1,
+                                    "margin-top": 0,
+                                    "margin-left": 0,
+                                    'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                                    'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                                }, "fast");
+                            } else {
+                                _this.fullTemp.full = false;
+                                $(this).addClass("lzy_nav_full_normal").removeClass("lzy_nav_full_big").find("span").html("◻");
+                                //缩回动画
+                                _this.popupObj.animate({
+                                    'top': _this.fullTemp.top,
+                                    'left': _this.fullTemp.left,
+                                    "margin-top": _this.fullTemp.marginTop,
+                                    "margin-left": _this.fullTemp.marginLeft,
+                                    'width': _this.cfg.width,
+                                    'height': _this.cfg.height
+                                }, "fast");
+                            }
+                        });
+                    }
+                    //是否允许键盘事件
+                    if (this.cfg.allowedKeyboard) {
+                        $(document).on("keyup", function (event) {
+                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            if (e && e.keyCode === 27) _this.closePopup();
+                        });
+                    }
+                    //配置标题
+                    if (this.cfg.title) this.popupObj.find(".lzy_nav_title").html(this.cfg.title);
+                    //配置内容
+                    if (this.cfg.content) {
+                        if ($(this.cfg.content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
+                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
+                    }
 
+                    //为了适配多种浏览器
                     if (isFire()) this.popupObj.find(".lzy_nav_close").css({'font-size': "25px"});
                     if (isIE()) {
                         this.popupObj.find(".lzy_nav_title").css('line-height', "33px");
@@ -335,119 +373,154 @@
                             'line-height': "20px"
                         });
                     }
+                    return this;
                 },
                 showPopup: function (content, title) {
+                    //背景是否显示
                     if (this.cfg.isShowBg) this.bgObj.show();
-                    if (this.cfg.targetSelector) {
-                        var rect = document.querySelector(this.cfg.targetSelector).getBoundingClientRect();
-                        var _this = this, fPos = this.cfg.followPosition, iPos = this.cfg.insidePosition;
-                        var setFull = function () {
-                            _this.popupObj.css({
-                                'top': 1,
-                                'left': 1,
-                                "margin-top": 0,
-                                "margin-left": 0,
-                                'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                                'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
-                            });
-                        };
+                    if (this.fullTemp.full) {
+                        //全屏状态设置
+                        this.popupObj.css({
+                            'top': 1,
+                            'left': 1,
+                            "margin-top": 0,
+                            "margin-left": 0,
+                            'width': window.innerWidth - this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                            'height': window.innerHeight - this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                        });
+                    } else {
+                        //获取目标选择器的绝对位置
+                        var rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
+                        var rPos = this.cfg.relativePosition, _this = this;
+                        //设置位置
                         var setCss = function (val1, val2) {
-                            _this.popupObj.css({'left': val1, 'top': val2});
+                            _this.popupObj.css({'left': parseFloat(val1), 'top': parseFloat(val2)});
                         };
+                        //判断位置配置参数
                         var checkPos = function () {
                             var size = 0;
                             for (var i = 1; i < arguments.length; i++) {
-                                if (arguments[0].indexOf(arguments[i])) size++;
+                                if (arguments[0].indexOf(arguments[i]) >= 0) size++;
                             }
                             return size === arguments.length - 1;
                         };
                         if (this.cfg.insideOrFollow === 'follow') {
-                            if (this.fullTemp.full) {
-                                setFull();
-                            } else {
-                                this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
-                                if (checkPos(fPos, "top")) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (checkPos(fPos, "bottom")) setCss(rect.left, rect.bottom + this.cfg.followOffset);
-                                if (checkPos(fPos, "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top);
-                                if (checkPos(fPos, "right")) setCss(rect.right + this.cfg.followOffset, rect.top);
-                                if (checkPos(fPos, "top", "right")) setCss(rect.right + this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (checkPos(fPos, "top", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.top - this.popupObj.height() - this.cfg.followOffset);
-                                if (checkPos(fPos, "bottom", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
-                                if (checkPos(fPos, "bottom", "right")) setCss(rect.right + this.cfg.followOffset, rect.bottom + this.cfg.followOffset);
-                            }
+                            //跟随状态
+                            this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
+                            if (checkPos(rPos, "top")) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
+                            if (checkPos(rPos, "bottom")) setCss(rect.left, rect.bottom + this.cfg.relativeOffset);
+                            if (checkPos(rPos, "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.top);
+                            if (checkPos(rPos, "right")) setCss(rect.right + this.cfg.relativeOffset, rect.top);
+                            if (checkPos(rPos, "top", "right")) setCss(rect.right + this.cfg.relativeOffset, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
+                            if (checkPos(rPos, "top", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
+                            if (checkPos(rPos, "bottom", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.bottom + this.cfg.relativeOffset);
+                            if (checkPos(rPos, "bottom", "right")) setCss(rect.right + this.cfg.relativeOffset, rect.bottom + this.cfg.relativeOffset);
                         } else {
-                            if (this.fullTemp.full) {
-                                setFull();
+                            //内嵌状态
+                            if ("toprightbottomleftcenter".indexOf(rPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
+                                if (checkPos(rPos, "top")) setCss(rect.left + rect.width / 2, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
+                                if (checkPos(rPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
+                                if (checkPos(rPos, "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + rect.height / 2);
+                                if (checkPos(rPos, "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + rect.height / 2);
+                                if (checkPos(rPos, "top", "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
+                                if (checkPos(rPos, "top", "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
+                                if (checkPos(rPos, "bottom", "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
+                                if (checkPos(rPos, "bottom", "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
+                                if (checkPos(rPos, "center")) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
                             } else {
-                                if ("toprightbottomleftcenter".indexOf(iPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
-                                    if (checkPos(iPos, "top")) setCss(rect.left + rect.width / 2, rect.top + 1);
-                                    if (checkPos(iPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - 1);
-                                    if (checkPos(iPos, "left")) setCss(rect.left + 1, rect.top + rect.height / 2);
-                                    if (checkPos(iPos, "right")) setCss(rect.left + rect.width - 1, rect.top + rect.height / 2);
-                                    if (checkPos(iPos, "center")) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                                    if (checkPos(iPos, "top", "right")) setCss(rect.left + rect.width, rect.top + 1);
-                                    if (checkPos(iPos, "top", "left")) setCss(rect.left + 1, rect.top + 1);
-                                    if (checkPos(iPos, "bottom", "left")) setCss(rect.left + 1, rect.top + rect.height);
-                                    if (checkPos(iPos, "bottom", "right")) setCss(rect.left + rect.width, rect.top + rect.height);
-                                } else {
-
-                                }
+                                var arrpos = rPos.replace(/px/g, "").replace(/\s+/g, "").split(",");
+                                if (arrpos.length === 1) setCss(parseFloat(arrpos[0]) + this.popupObj.width() / 2, +this.popupObj.height() / 2);
+                                else setCss(parseFloat(arrpos[0]) + this.popupObj.width() / 2, parseFloat(arrpos[1]) + this.popupObj.height() / 2);
                             }
                         }
                     }
-                    this.popupObj.find(".lzy_popup_nav").css({
-                        'border-top-right-radius': this.cfg.borderRadius,
-                        'border-top-left-radius': this.cfg.borderRadius
-                    });
+
+                    //配置各项底部按键等的样式(因为添加按键是不定性的，后滞的，无法预先在初始化时配置)
+                    if (this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").length === 0) {
+                        this.popupObj.find(".lzy_popup_cont").css('height', 'calc(100% - 30px)').next().css('height', '0');
+                    }
                     this.popupObj.find(".lzy_popup_footer").css("text-align", this.cfg.buttonAlign);
                     this.popupObj.find(".lzy_footer_btn").css({
                         'border-color': this.cfg.themeColor,
                         'background-color': this.cfg.themeColor
                     });
+                    if (isFire()) {
+                        this.popupObj.find(".lzy_footer_btn").css({
+                            'height': '23px'
+                        });
+                    }
+                    if (isIE()) {
+                        this.popupObj.find(".lzy_footer_btn").css({
+                            'line-height': '24px'
+                        });
+                    }
                     this.popupObj.find(".lzy_footer_btn_close").css({
                         'color': this.cfg.themeColor,
                         'border-color': this.cfg.themeColor,
                         'background-color': 'white'
                     });
-
+                    //配置标题
                     if (title) this.popupObj.find(".lzy_nav_title").html(title);
+                    //配置内容
                     if (content && content !== "") {
-                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").html($(content));
-                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");
+                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").html($(content));//如果时 dom 节点就直接添加
+                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
                     }
-                    this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");
+                    this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");//显示弹框，插入弹出动画样式
                 },
                 closePopup: function () {
                     var _this = this;
-                    _this.popupObj.removeClass("lzy_popup_show").addClass("lzy_popup_close");
+                    if (typeof _this.closeEvent === "function") _this.closeEvent.call(this);//关闭按键回调方法执行
+                    _this.popupObj.removeClass("lzy_popup_show").addClass("lzy_popup_close");//插入弹回动画样式
                     setTimeout(function () {
-                        _this.popupObj.hide();
-                        _this.bgObj.hide();
+                        _this.popupObj.hide();//隐藏
+                        _this.bgObj.hide();//隐藏
                     }, 90);
                 },
                 addButton: function (btnName, callback) {
                     var _this = this, tempColor;
-                    var curBtn = $("<div class='lzy_footer_btn'>" + btnName + "</div>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.popupObj.find(".lzy_popup_footer"))
+                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.popupObj.find(".lzy_popup_footer"))
                         .on("click", function () {
                             if (callback) callback.call(_this);
-                            if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) _this.closePopup();
+                            if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) _this.closePopup();//给含有“关闭”意思的按键添加关闭事件
                         })
                         .hover(function () {
+                            //给按键添加悬浮样式事件（这里没有使用css来配置是因为主题颜色是活的，所以无法确定按键的颜色是什么）
                             tempColor = $(this).css("background-color");
                             $(this).css('background-color', curBtn.hasClass("lzy_footer_btn_close") ? dimColor(_this.cfg.themeColor, .1) : darkColor(_this.cfg.themeColor, .92));
                         }, function () {
                             $(this).css('background-color', tempColor);
                         });
-                    if (isIE()) curBtn.css({'line-height': "25px"});
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
                     var size = 0, btns = _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
-                    for (var i = 0; i < btns.length; i++) size += btns.eq(i).outerWidth() + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
-                    if (size > _this.popupObj.width()) _this.setStyle({width: size + 20});
+                    for (var i = 0; i < btns.length; i++) {
+                        var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
+                        size += tempSize + 22 + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
+                    }
+                    if (size > _this.popupObj.width()) _this.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
+                    return this;
+                },
+                removeButton: function (nameOrIndex) {
+                    var _this = this;
+                    if (isNaN(nameOrIndex)) {
+                        //非数字即按名称判断按键
+                        var btns = _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                        for (var i = 0; i < btns.length; i++) {
+                            if (btns.eq(i).text() === nameOrIndex) btns.eq(i).remove();
+                        }
+                    } else {
+                        _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
+                    }
+                },
+                getRect: function () {
+                    return this.popupObj.get(0).getBoundingClientRect();
+                },
+                onClose: function (callback) {
+                    if (callback) this.closeEvent = callback;
                     return this;
                 }
             };
             return new lzyPopup(cfg);
         }
     });
-
 })(jQuery, window, document);
