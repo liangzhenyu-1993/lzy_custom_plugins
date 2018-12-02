@@ -5,7 +5,7 @@
 */
 
 /*
-插件-弹框提示-v1.3(可以展示大内容，也可以是确认框)
+插件-弹框提示-v1.3.1(可以展示大内容，也可以是确认框)
 使用方法说明：
     1.此插件基于jQuery编写，使用时需要先导入jQuery
     2.获取对象
@@ -41,13 +41,13 @@
         border:弹框边框设置,
         borderRadius:边框的圆角大小,
         themeColor:弹框的主题颜色,
+        themeStyle:主题风格，目前有两种："default"和"dimnav",默认值:"default",
         isShowShadow:是否显示边框阴影,默认为true,
         shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为10px，
         isShowIcon:是否显示左上图标,默认:true,
         icon:图标的图片（可以是路径，也可以是图片base64编码）,
         allowedFullscreen:是否允许全屏，即是否添加全屏按键，默认值：false,
         allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
-        closeBtnEffect:右上关闭按键的悬停效果,目前有"dazzling"：炫影效果,"rotate"：旋转效果,"enlarge"：放大效果;默认炫影效果
         content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
             简而言之就是不常改变的内容（一般都是配置了样式的节点）放在这，经常改变的内容（一般都是一句疑问句）就放在showPopup方法中。
         title:弹框标题,
@@ -61,11 +61,6 @@
     }
  */
 ;(function ($, window, document, undefined) {
-    window.LzyCustomPopup = {
-        BUTTON_DAZZLING: "dazzling",//炫影效果
-        BUTTON_ROTATE: "rotate",//旋转效果
-        BUTTON_ENLARGE: "enlarge"//放大效果
-    };
     $.extend({
         initPopup: function (cfg) {
             /**
@@ -172,18 +167,16 @@
              * @param cfg 配置
              */
             var lzyPopup = function (cfg) {
-                var _this = this;
                 this.popupObj = null;
                 this.bgObj = null;
                 this.cfg = null;
                 this.fullTemp = {full: false};
                 this.closeEvent = null;
                 this.bgObj = $("<div class='lzy_custom_bg'></div>").appendTo("body");
-                this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div>" +
-                    "<div class='lzy_nav_title'>消息</div><div class='lzy_nav_close'>×</div><div class='lzy_nav_full lzy_nav_full_normal'><span>◻</span></div></div>" +
-                    "<div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>").appendTo("body").on("click", ".lzy_nav_close", function () {
-                    _this.closePopup();
-                });
+                this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div><div class='lzy_nav_title'>消息</div><svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg><div class='lzy_nav_full'></div></div><div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>").appendTo("body");
+                this.zoominBtnTxt = "<svg><rect x='4' y='4' width='10' height='10' style='stroke: %color' /></svg>";
+                this.zoomoutBtnTxt = "<svg><rect x='4' y='6' width='8' height='8' style='stroke: %color'/><line x1='5' y1='4' x2='14' y2='4' style='stroke: %color'/><line x1='14' y1='3' x2='14' y2='13' style='stroke: %color'/></svg>";
+                this.zoomBtnColor = "";
                 this.setStyle(cfg, true);
             };
             lzyPopup.prototype = {
@@ -200,15 +193,15 @@
                             height: cfg.height || 200,
                             border: cfg.border || '1px solid black',
                             borderRadius: isEmpty(cfg.borderRadius) ? 5 : cfg.borderRadius,
+                            themeColor: cfg.themeColor || "#358aff",
+                            themeStyle: (cfg.themeStyle || 'default').toLowerCase(),
                             isShowIcon: isEmpty(cfg.isShowIcon) ? true : cfg.isShowIcon,
                             icon: cfg.icon || null,
                             allowedFullscreen: cfg.allowedFullscreen,
                             allowedKeyboard: isEmpty(cfg.allowedKeyboard) ? true : cfg.allowedKeyboard,
-                            closeBtnEffect: cfg.closeBtnEffect || LzyCustomPopup.BUTTON_DAZZLING,
                             content: cfg.content || null,
                             title: cfg.title || null,
                             buttonAlign: cfg.buttonAlign || 'right',
-                            themeColor: cfg.themeColor || "#358aff",
                             isShowShadow: isEmpty(cfg.isShowShadow) ? true : cfg.isShowShadow,
                             shadowSize: isEmpty(cfg.shadowSize) ? 10 : cfg.shadowSize,
                             isShowBg: cfg.isShowBg,
@@ -226,15 +219,15 @@
                             height: cfg.height || this.cfg.height,
                             border: cfg.border || this.cfg.border,
                             borderRadius: !isEmpty(cfg.borderRadius) ? cfg.borderRadius : this.cfg.borderRadius,
+                            themeColor: cfg.themeColor || this.cfg.themeColor,
+                            themeStyle: (cfg.themeStyle || this.cfg.themeStyle).toLowerCase(),
                             isShowIcon: !isEmpty(cfg.isShowIcon) ? cfg.isShowIcon : this.cfg.isShowIcon,
                             icon: cfg.icon || this.cfg.icon,
                             allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : this.cfg.allowedFullscreen,
                             allowedKeyboard: !isEmpty(cfg.allowedKeyboard) ? cfg.allowedKeyboard : this.cfg.allowedKeyboard,
-                            closeBtnEffect: cfg.closeBtnEffect || this.cfg.closeBtnEffect,
                             content: cfg.content || this.cfg.content,
                             title: cfg.title || this.cfg.title,
                             buttonAlign: cfg.buttonAlign || this.cfg.buttonAlign,
-                            themeColor: cfg.themeColor || this.cfg.themeColor,
                             isShowShadow: !isEmpty(cfg.isShowShadow) ? cfg.isShowShadow : this.cfg.isShowShadow,
                             shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
                             isShowBg: !isEmpty(cfg.isShowBg) ? cfg.isShowBg : this.cfg.isShowBg,
@@ -246,7 +239,7 @@
                         };
                     }
                     //配置样式
-                    var _this = this;
+                    var that = this;
                     this.popupObj.css({
                         'width': this.cfg.width,
                         'height': this.cfg.height,
@@ -258,19 +251,37 @@
                         'text-align': cfg.buttonAlign
                     });
                     this.popupObj.css({'border-color': this.cfg.themeColor});
-                    this.popupObj.find(".lzy_popup_nav").css({
-                        'border-bottom-color': this.cfg.themeColor,
-                        'background-color': dimColor(this.cfg.themeColor, .15),
-                        'border-top-right-radius': this.cfg.borderRadius,
-                        'border-top-left-radius': this.cfg.borderRadius
+                    this.popupObj.find(".lzy_popup_nav").css({'border-bottom-color': this.cfg.themeColor});
+
+                    if (this.cfg.themeStyle === "default") {
+                        this.popupObj.find(".lzy_popup_nav").css({'background-color': this.cfg.themeColor});
+                        this.popupObj.find(".lzy_nav_icon").css({'border-color': '#fff', 'color': '#fff'});
+                        this.popupObj.find(".lzy_nav_title").css({'color': '#fff'});
+                        this.popupObj.find(".lzy_nav_close").find("line").css({'stroke': '#fff'});
+                        this.zoomBtnColor = '#fff';
+                    }
+
+
+                    if (this.cfg.themeStyle === "dimnav") {
+                        this.popupObj.find(".lzy_popup_nav").css({'background-color': dimColor(this.cfg.themeColor, .15)});
+                        this.popupObj.find(".lzy_nav_icon").css({
+                            'border-color': this.cfg.themeColor,
+                            'color': this.cfg.themeColor
+                        });
+                        this.popupObj.find(".lzy_nav_title").css({'color': '#000'});
+                        this.popupObj.find(".lzy_nav_close").find("line").css({'stroke': this.cfg.themeColor});
+                        this.zoomBtnColor = this.cfg.themeColor;
+                    }
+
+                    this.popupObj.find(".lzy_nav_close").off("mouseenter mouseleave click").hover(function () {
+                        $(this).find("rect").css("fill", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
+                    }, function () {
+                        $(this).find("rect").css("fill", "rgba(0,0,0,0)");
+                    }).on("click", function () {
+                        that.closePopup();
                     });
-                    this.popupObj.find(".lzy_nav_icon").css({
-                        'border-color': this.cfg.themeColor,
-                        'color': this.cfg.themeColor
-                    });
-                    this.popupObj.find(".lzy_nav_close").css({'color': this.cfg.themeColor});
-                    this.popupObj.find(".lzy_nav_full").css({'color': this.cfg.themeColor});
-                    this.bgObj.css('background-color', dimColor(this.cfg.themeColor, .1));
+
+                    this.bgObj.css('background-color', dimColor(this.cfg.themeColor, .2));
                     if (this.cfg.isShowShadow) this.popupObj.css({'box-shadow': "0 0 " + this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor});
                     if (this.cfg.isShowIcon) {
                         if (this.cfg.icon) {
@@ -284,28 +295,17 @@
                     } else {
                         this.popupObj.find(".lzy_nav_icon").hide();
                     }
-                    //是否配置的关闭按键的样式
-                    if (this.cfg.closeBtnEffect) {
-                        var closeCss,
-                            closeCsses = ["lzy_nav_close_dazzling", "lzy_nav_close_rotate", "lzy_nav_close_enlarge"];
-                        if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_DAZZLING) closeCss = closeCsses[0];
-                        else if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_ROTATE) closeCss = closeCsses[1];
-                        else if (this.cfg.closeBtnEffect === LzyCustomPopup.BUTTON_ENLARGE) closeCss = closeCsses[2];
-                        else closeCss = closeCsses[0];
-                        for (var i = 0; i < closeCsses.length; i++) this.popupObj.find(".lzy_nav_close").removeClass(closeCsses[i]);
-                        this.popupObj.find(".lzy_nav_close").addClass(closeCss);
-                    }
                     //是否允许拖动
                     if (this.cfg.allowedMove) {
                         var popupObj = this.popupObj;
                         var pW = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.width() / 2;
                         var pH = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.height() / 2;
                         //拖动事件
-                        popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").mousedown(function (e) {
+                        popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
                             var isMove = true;
                             var div_x = e.pageX - popupObj.offset().left - pW;
                             var div_y = e.pageY - popupObj.offset().top - pH;
-                            $(document).off("mousemove").mousemove(function (e) {
+                            $(document).off("mousemove mouseup").mousemove(function (e) {
                                 if (isMove) popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
                             }).mouseup(function () {
                                 isMove = false;
@@ -314,45 +314,54 @@
                     }
                     //是否允许放大全屏
                     if (this.cfg.allowedFullscreen) {
-                        this.popupObj.find(".lzy_nav_full").show().on("click", function () {
-                            if ($(this).hasClass("lzy_nav_full_normal")) {
-                                $(this).addClass("lzy_nav_full_big").removeClass("lzy_nav_full_normal").find("span").html("❐");
-                                _this.fullTemp = {
-                                    top: _this.popupObj.css("top"),
-                                    left: _this.popupObj.css("left"),
-                                    marginTop: _this.popupObj.css("margin-top"),
-                                    marginLeft: _this.popupObj.css("margin-left"),
-                                    full: true
-                                };
-                                //放大动画
-                                _this.popupObj.animate({
-                                    'top': 1,
-                                    'left': 1,
-                                    "margin-top": 0,
-                                    "margin-left": 0,
-                                    'width': window.innerWidth - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                                    'height': window.innerHeight - _this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
-                                }, "fast");
-                            } else {
-                                _this.fullTemp.full = false;
-                                $(this).addClass("lzy_nav_full_normal").removeClass("lzy_nav_full_big").find("span").html("◻");
-                                //缩回动画
-                                _this.popupObj.animate({
-                                    'top': _this.fullTemp.top,
-                                    'left': _this.fullTemp.left,
-                                    "margin-top": _this.fullTemp.marginTop,
-                                    "margin-left": _this.fullTemp.marginLeft,
-                                    'width': _this.cfg.width,
-                                    'height': _this.cfg.height
-                                }, "fast");
-                            }
-                        });
+                        this.popupObj.find(".lzy_nav_full").show()
+                            .append($(this.zoominBtnTxt.replace(/%color/g, this.zoomBtnColor)))
+                            .off("mouseenter mouseleave click")
+                            .hover(function () {
+                                $(this).css("background-color", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
+                            }, function () {
+                                $(this).css("background-color", "rgba(0,0,0,0)");
+                            })
+                            .on("click", function () {
+                                $(this).css("background-color", "rgba(0,0,0,0)");
+                                if ($(this).find("line").length === 0) {
+                                    $(this).html($(that.zoomoutBtnTxt.replace(/%color/g, that.zoomBtnColor)));
+                                    that.fullTemp = {
+                                        top: that.popupObj.css("top"),
+                                        left: that.popupObj.css("left"),
+                                        marginTop: that.popupObj.css("margin-top"),
+                                        marginLeft: that.popupObj.css("margin-left"),
+                                        full: true
+                                    };
+                                    //放大动画
+                                    that.popupObj.animate({
+                                        'top': 1,
+                                        'left': 1,
+                                        "margin-top": 0,
+                                        "margin-left": 0,
+                                        'width': window.innerWidth - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                                        'height': window.innerHeight - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                                    }, "fast");
+                                } else {
+                                    $(this).html($(that.zoominBtnTxt.replace(/%color/g, that.zoomBtnColor)));
+                                    that.fullTemp.full = false;
+                                    //缩回动画
+                                    that.popupObj.animate({
+                                        'top': that.fullTemp.top,
+                                        'left': that.fullTemp.left,
+                                        "margin-top": that.fullTemp.marginTop,
+                                        "margin-left": that.fullTemp.marginLeft,
+                                        'width': that.cfg.width,
+                                        'height': that.cfg.height
+                                    }, "fast");
+                                }
+                            });
                     }
                     //是否允许键盘事件
                     if (this.cfg.allowedKeyboard) {
                         $(document).on("keyup", function (event) {
                             var e = event || window.event || arguments.callee.caller.arguments[0];
-                            if (e && e.keyCode === 27) _this.closePopup();
+                            if (e && e.keyCode === 27) that.closePopup();
                         });
                     }
                     //配置标题
@@ -364,14 +373,14 @@
                     }
 
                     //为了适配多种浏览器
-                    if (isFire()) this.popupObj.find(".lzy_nav_close").css({'font-size': "25px"});
+                    // if (isFire()) this.popupObj.find(".lzy_nav_close").css({'font-size': "25px"});
                     if (isIE()) {
                         this.popupObj.find(".lzy_nav_title").css('line-height', "33px");
-                        this.popupObj.find(".lzy_nav_full>span").css('font-size', "19px");
-                        this.popupObj.find(".lzy_nav_close").css({
-                            'font-size': "25px",
-                            'line-height': "20px"
-                        });
+                        // this.popupObj.find(".lzy_nav_full>span").css('font-size', "19px");
+                        // this.popupObj.find(".lzy_nav_close").css({
+                        //     'font-size': "25px",
+                        //     'line-height': "20px"
+                        // });
                     }
                     return this;
                 },
@@ -391,10 +400,10 @@
                     } else {
                         //获取目标选择器的绝对位置
                         var rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
-                        var rPos = this.cfg.relativePosition, _this = this;
+                        var rPos = this.cfg.relativePosition, that = this;
                         //设置位置
                         var setCss = function (val1, val2) {
-                            _this.popupObj.css({'left': parseFloat(val1), 'top': parseFloat(val2)});
+                            that.popupObj.css({'left': parseFloat(val1), 'top': parseFloat(val2)});
                         };
                         //判断位置配置参数
                         var checkPos = function () {
@@ -444,16 +453,9 @@
                         'border-color': this.cfg.themeColor,
                         'background-color': this.cfg.themeColor
                     });
-                    if (isFire()) {
-                        this.popupObj.find(".lzy_footer_btn").css({
-                            'height': '23px'
-                        });
-                    }
-                    if (isIE()) {
-                        this.popupObj.find(".lzy_footer_btn").css({
-                            'line-height': '24px'
-                        });
-                    }
+                    if (isFire()) this.popupObj.find(".lzy_footer_btn").css({'height': '23px'});
+                    if (isIE()) this.popupObj.find(".lzy_footer_btn").css({'line-height': '24px'});
+
                     this.popupObj.find(".lzy_footer_btn_close").css({
                         'color': this.cfg.themeColor,
                         'border-color': this.cfg.themeColor,
@@ -469,47 +471,53 @@
                     this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");//显示弹框，插入弹出动画样式
                 },
                 closePopup: function () {
-                    var _this = this;
-                    if (typeof _this.closeEvent === "function") _this.closeEvent.call(this);//关闭按键回调方法执行
-                    _this.popupObj.removeClass("lzy_popup_show").addClass("lzy_popup_close");//插入弹回动画样式
+                    var that = this;
+                    that.popupObj.removeClass("lzy_popup_show").addClass("lzy_popup_close");//插入弹回动画样式
                     setTimeout(function () {
-                        _this.popupObj.hide();//隐藏
-                        _this.bgObj.hide();//隐藏
-                    }, 90);
+                        that.popupObj.hide();//隐藏
+                        that.bgObj.hide();//隐藏
+                        if (typeof that.closeEvent === "function") {
+                            try {
+                                that.closeEvent.call(this);//关闭按键回调方法执行
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+                    }, 100);
                 },
                 addButton: function (btnName, callback) {
-                    var _this = this, tempColor;
+                    var that = this, tempColor;
                     var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.popupObj.find(".lzy_popup_footer"))
                         .on("click", function () {
-                            if (callback) callback.call(_this);
-                            if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) _this.closePopup();//给含有“关闭”意思的按键添加关闭事件
+                            if (callback) callback.call(that);
+                            if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) that.closePopup();//给含有“关闭”意思的按键添加关闭事件
                         })
                         .hover(function () {
                             //给按键添加悬浮样式事件（这里没有使用css来配置是因为主题颜色是活的，所以无法确定按键的颜色是什么）
                             tempColor = $(this).css("background-color");
-                            $(this).css('background-color', curBtn.hasClass("lzy_footer_btn_close") ? dimColor(_this.cfg.themeColor, .1) : darkColor(_this.cfg.themeColor, .92));
+                            $(this).css('background-color', curBtn.hasClass("lzy_footer_btn_close") ? dimColor(that.cfg.themeColor, .1) : darkColor(that.cfg.themeColor, .92));
                         }, function () {
                             $(this).css('background-color', tempColor);
                         });
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
-                    var size = 0, btns = _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                    var size = 0, btns = that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
                     for (var i = 0; i < btns.length; i++) {
                         var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
                         size += tempSize + 22 + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
                     }
-                    if (size > _this.popupObj.width()) _this.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
+                    if (size > that.popupObj.width()) that.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
                     return this;
                 },
                 removeButton: function (nameOrIndex) {
-                    var _this = this;
+                    var that = this;
                     if (isNaN(nameOrIndex)) {
                         //非数字即按名称判断按键
-                        var btns = _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                        var btns = that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
                         for (var i = 0; i < btns.length; i++) {
                             if (btns.eq(i).text() === nameOrIndex) btns.eq(i).remove();
                         }
                     } else {
-                        _this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
+                        that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
                     }
                 },
                 getRect: function () {

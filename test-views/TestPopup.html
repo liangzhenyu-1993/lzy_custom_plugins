@@ -10,9 +10,9 @@
             margin: 0;
         }
     </style>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.3.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.3.1.css">
     <script src="../js/jquery-1.9.1.min.js"></script>
-    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.1.js"></script>
 
     <script>
         var mypops = new Array(39);
@@ -254,14 +254,9 @@
                 .addButton("确定", function () {
                     alert("点击了确定");
                 }).addButton("取消");
-            $("#effect").on("change", function () {
-                var types = {
-                    "dazzling": LzyCustomPopup.BUTTON_DAZZLING,
-                    "rotate": LzyCustomPopup.BUTTON_ROTATE,
-                    "enlarge": LzyCustomPopup.BUTTON_ENLARGE
-                };
+            $("#themeStyle").on("change", function () {
                 mypops[36].setStyle({
-                    closeBtnEffect: types[$(this).val()]
+                    themeStyle: $(this).val()
                 })
             });
             //---------------------------
@@ -276,7 +271,7 @@
             mypops[38] = $.initPopup().addButton("我的子弹框", function () {
                 if (!sonOfpop38) sonOfpop38 = $.initPopup({}).addButton("取消");
 
-                var rect = mypops[38].getRect();//获取父弹框的位置，用于设置自弹框的位置
+                var rect = mypops[38].getRect();//获取父弹框的位置，用于设置子弹框的位置
 
                 //这里的子弹框是使用内嵌绝对位置设置的
                 sonOfpop38.setStyle({
@@ -395,12 +390,11 @@
         <td><input type="button" id="btn34" value="节点作内容3" onclick="showPopup(34);"></td>
         <td><input type="button" id="btn35" value="放大全屏" onclick="showPopup(35,'放大全屏功能是一位热心网友建议，感谢这位网友！');"></td>
         <td>
-            <select id="effect">
-                <option value="dazzling">炫影</option>
-                <option value="rotate">旋转</option>
-                <option value="enlarge">放大</option>
+            <select id="themeStyle">
+                <option value="default">默认</option>
+                <option value="dimnav">淡色</option>
             </select>
-            <input type="button" id="btn36" value="关闭按键" onclick="showPopup(36,'右上关闭按键的悬停效果');">
+            <input type="button" id="btn36" value="弹框风格" onclick="showPopup(36,'弹框风格');">
         </td>
         <td colspan="2">
             <span>X:</span>
@@ -415,11 +409,11 @@
     </tbody>
 </table>
 
-<div class="content" style="border: 1px solid black;">
+<div class="content">
     我的选择器是 类：content
     <h1>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h1>
 </div>
-<div id="content" style="border: 1px solid black;">
+<div id="content">
     我的选择器是 ID：content
     <h1>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h1>
 </div>
