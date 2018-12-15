@@ -42,6 +42,7 @@
         borderRadius:边框的圆角大小,
         themeColor:弹框的主题颜色,
         themeStyle:主题风格，目前有两种："default"和"dimnav",默认值:"default",
+        animation:弹框弹出风格动画，1、弹出；2、收缩；3、旋转；4、下滑；5、上滑；6、抖动
         isShowShadow:是否显示边框阴影,默认为true,
         shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为10px，
         isShowIcon:是否显示左上图标,默认:true,
@@ -195,6 +196,7 @@
                             borderRadius: isEmpty(cfg.borderRadius) ? 5 : cfg.borderRadius,
                             themeColor: cfg.themeColor || "#358aff",
                             themeStyle: (cfg.themeStyle || 'default').toLowerCase(),
+                            animation: cfg.animation || 1,
                             isShowIcon: isEmpty(cfg.isShowIcon) ? true : cfg.isShowIcon,
                             icon: cfg.icon || null,
                             allowedFullscreen: cfg.allowedFullscreen,
@@ -221,6 +223,7 @@
                             borderRadius: !isEmpty(cfg.borderRadius) ? cfg.borderRadius : this.cfg.borderRadius,
                             themeColor: cfg.themeColor || this.cfg.themeColor,
                             themeStyle: (cfg.themeStyle || this.cfg.themeStyle).toLowerCase(),
+                            animation: cfg.animation || this.cfg.animation,
                             isShowIcon: !isEmpty(cfg.isShowIcon) ? cfg.isShowIcon : this.cfg.isShowIcon,
                             icon: cfg.icon || this.cfg.icon,
                             allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : this.cfg.allowedFullscreen,
@@ -243,8 +246,8 @@
                     this.popupObj.css({
                         'width': this.cfg.width,
                         'height': this.cfg.height,
-                        'margin-left': -Math.floor(this.cfg.width / 2) + "px",
-                        'margin-top': -Math.floor(this.cfg.height / 2) + "px",
+                        // 'margin-left': -Math.floor(this.cfg.width / 2) + "px",
+                        // 'margin-top': -Math.floor(this.cfg.height / 2) + "px",
                         'border': this.cfg.border,
                         'border-radius': this.cfg.borderRadius
                     }).find(".lzy_popup_footer").css({
@@ -297,16 +300,13 @@
                     }
                     //是否允许拖动
                     if (this.cfg.allowedMove) {
-                        var popupObj = this.popupObj;
-                        var pW = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.width() / 2;
-                        var pH = this.cfg.insideOrFollow !== "inside" ? 0 : popupObj.height() / 2;
                         //拖动事件
-                        popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
+                        that.popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
                             var isMove = true;
-                            var div_x = e.pageX - popupObj.offset().left - pW;
-                            var div_y = e.pageY - popupObj.offset().top - pH;
+                            var div_x = e.pageX - that.popupObj.offset().left;
+                            var div_y = e.pageY - that.popupObj.offset().top;
                             $(document).off("mousemove mouseup").mousemove(function (e) {
-                                if (isMove) popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
+                                if (isMove) that.popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
                             }).mouseup(function () {
                                 isMove = false;
                             });
@@ -329,16 +329,12 @@
                                     that.fullTemp = {
                                         top: that.popupObj.css("top"),
                                         left: that.popupObj.css("left"),
-                                        marginTop: that.popupObj.css("margin-top"),
-                                        marginLeft: that.popupObj.css("margin-left"),
                                         full: true
                                     };
                                     //放大动画
                                     that.popupObj.animate({
                                         'top': 1,
                                         'left': 1,
-                                        "margin-top": 0,
-                                        "margin-left": 0,
                                         'width': window.innerWidth - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
                                         'height': window.innerHeight - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2
                                     }, "fast");
@@ -349,8 +345,6 @@
                                     that.popupObj.animate({
                                         'top': that.fullTemp.top,
                                         'left': that.fullTemp.left,
-                                        "margin-top": that.fullTemp.marginTop,
-                                        "margin-left": that.fullTemp.marginLeft,
                                         'width': that.cfg.width,
                                         'height': that.cfg.height
                                     }, "fast");
@@ -373,14 +367,8 @@
                     }
 
                     //为了适配多种浏览器
-                    // if (isFire()) this.popupObj.find(".lzy_nav_close").css({'font-size': "25px"});
                     if (isIE()) {
                         this.popupObj.find(".lzy_nav_title").css('line-height', "33px");
-                        // this.popupObj.find(".lzy_nav_full>span").css('font-size', "19px");
-                        // this.popupObj.find(".lzy_nav_close").css({
-                        //     'font-size': "25px",
-                        //     'line-height': "20px"
-                        // });
                     }
                     return this;
                 },
@@ -401,9 +389,13 @@
                         //获取目标选择器的绝对位置
                         var rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
                         var rPos = this.cfg.relativePosition, that = this;
+                        var halfW = this.cfg.width / 2, halfH = this.cfg.height / 2, oft = this.cfg.relativeOffset;
                         //设置位置
                         var setCss = function (val1, val2) {
-                            that.popupObj.css({'left': parseFloat(val1), 'top': parseFloat(val2)});
+                            that.popupObj.css({
+                                'left': parseFloat(val1) - that.cfg.width / 2,
+                                'top': parseFloat(val2) - that.cfg.height / 2
+                            });
                         };
                         //判断位置配置参数
                         var checkPos = function () {
@@ -416,30 +408,30 @@
                         if (this.cfg.insideOrFollow === 'follow') {
                             //跟随状态
                             this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
-                            if (checkPos(rPos, "top")) setCss(rect.left, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
-                            if (checkPos(rPos, "bottom")) setCss(rect.left, rect.bottom + this.cfg.relativeOffset);
-                            if (checkPos(rPos, "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.top);
-                            if (checkPos(rPos, "right")) setCss(rect.right + this.cfg.relativeOffset, rect.top);
-                            if (checkPos(rPos, "top", "right")) setCss(rect.right + this.cfg.relativeOffset, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
-                            if (checkPos(rPos, "top", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.top - this.popupObj.height() - this.cfg.relativeOffset);
-                            if (checkPos(rPos, "bottom", "left")) setCss(rect.left - this.popupObj.width() - this.cfg.relativeOffset, rect.bottom + this.cfg.relativeOffset);
-                            if (checkPos(rPos, "bottom", "right")) setCss(rect.right + this.cfg.relativeOffset, rect.bottom + this.cfg.relativeOffset);
+                            if (checkPos(rPos, "top")) setCss(rect.left + halfW, rect.top - halfH - oft);
+                            if (checkPos(rPos, "bottom")) setCss(rect.left + halfW, rect.bottom + halfH + oft);
+                            if (checkPos(rPos, "left")) setCss(rect.left - halfW - oft, rect.top + halfH);
+                            if (checkPos(rPos, "right")) setCss(rect.right + halfW + oft, rect.top + halfH);
+                            if (checkPos(rPos, "top", "right")) setCss(rect.right + halfW + oft, rect.top - halfH - oft);
+                            if (checkPos(rPos, "top", "left")) setCss(rect.left - halfW - oft, rect.top - halfH - oft);
+                            if (checkPos(rPos, "bottom", "left")) setCss(rect.left - halfW - oft, rect.bottom + halfH + oft);
+                            if (checkPos(rPos, "bottom", "right")) setCss(rect.right + halfW + oft, rect.bottom + halfH + oft);
                         } else {
                             //内嵌状态
                             if ("toprightbottomleftcenter".indexOf(rPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
-                                if (checkPos(rPos, "top")) setCss(rect.left + rect.width / 2, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
-                                if (checkPos(rPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
-                                if (checkPos(rPos, "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + rect.height / 2);
-                                if (checkPos(rPos, "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + rect.height / 2);
-                                if (checkPos(rPos, "top", "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
-                                if (checkPos(rPos, "top", "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + this.popupObj.height() / 2 + this.cfg.relativeOffset);
-                                if (checkPos(rPos, "bottom", "left")) setCss(rect.left + this.popupObj.width() / 2 + this.cfg.relativeOffset, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
-                                if (checkPos(rPos, "bottom", "right")) setCss(rect.left + rect.width - this.popupObj.width() / 2 - this.cfg.relativeOffset, rect.top + rect.height - this.popupObj.height() / 2 - this.cfg.relativeOffset);
+                                if (checkPos(rPos, "top")) setCss(rect.left + rect.width / 2, rect.top + halfH + oft);
+                                if (checkPos(rPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - halfH - oft);
+                                if (checkPos(rPos, "left")) setCss(rect.left + halfW + oft, rect.top + rect.height / 2);
+                                if (checkPos(rPos, "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height / 2);
+                                if (checkPos(rPos, "top", "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + halfH + oft);
+                                if (checkPos(rPos, "top", "left")) setCss(rect.left + halfW + oft, rect.top + halfH + oft);
+                                if (checkPos(rPos, "bottom", "left")) setCss(rect.left + halfW + oft, rect.top + rect.height - halfH - oft);
+                                if (checkPos(rPos, "bottom", "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height - halfH - oft);
                                 if (checkPos(rPos, "center")) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
                             } else {
                                 var arrpos = rPos.replace(/px/g, "").replace(/\s+/g, "").split(",");
-                                if (arrpos.length === 1) setCss(parseFloat(arrpos[0]) + this.popupObj.width() / 2, +this.popupObj.height() / 2);
-                                else setCss(parseFloat(arrpos[0]) + this.popupObj.width() / 2, parseFloat(arrpos[1]) + this.popupObj.height() / 2);
+                                if (arrpos.length === 1) setCss(parseFloat(arrpos[0]) + halfW, halfH);
+                                else setCss(parseFloat(arrpos[0]) + halfW, parseFloat(arrpos[1]) + halfH);
                             }
                         }
                     }
@@ -468,11 +460,12 @@
                         if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").html($(content));//如果时 dom 节点就直接添加
                         else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
                     }
-                    this.popupObj.removeClass("lzy_popup_close").show().addClass("lzy_popup_show");//显示弹框，插入弹出动画样式
+                    for (var i = 0; i < 10; i++) this.popupObj.removeClass("lzy_popup_close_" + i);
+                    this.popupObj.show().addClass("lzy_popup_show_" + this.cfg.animation);//显示弹框，插入弹出动画样式
                 },
                 closePopup: function () {
                     var that = this;
-                    that.popupObj.removeClass("lzy_popup_show").addClass("lzy_popup_close");//插入弹回动画样式
+                    that.popupObj.removeClass("lzy_popup_show_" + this.cfg.animation).addClass("lzy_popup_close_" + this.cfg.animation);//插入弹回动画样式
                     setTimeout(function () {
                         that.popupObj.hide();//隐藏
                         that.bgObj.hide();//隐藏
@@ -483,7 +476,7 @@
                                 console.error(e);
                             }
                         }
-                    }, 100);
+                    }, 280);
                 },
                 addButton: function (btnName, callback) {
                     var that = this, tempColor;

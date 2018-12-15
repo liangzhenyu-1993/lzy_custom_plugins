@@ -32,16 +32,16 @@
 }
 
 .lzy_nav_icon {
-    width: 17px;
-    height: 17px;
+    width: 15px;
+    height: 15px;
     float: left;
-    margin: 5px 0 0 5px;
+    margin: 7px 0 0 5px;
     background-repeat: no-repeat;
     background-size: 100% 100%;
     border-radius: 10px;
     border: 1px solid black;
     text-align: center;
-    line-height: 17px;
+    line-height: 14px;
 }
 
 .lzy_nav_title {
@@ -134,12 +134,13 @@
     margin-right: 10px;
 }
 
-.lzy_popup_show {
+/****弹出风格**************/
+.lzy_popup_show_1 {
     transform: scale(1, 1);
-    animation: lzyPopupShow .1s 1;
+    animation: lzyPopupShow_1 .3s 1;
 }
 
-@keyframes lzyPopupShow {
+@keyframes lzyPopupShow_1 {
     0% {
         opacity: .5;
         transform: scale(.5)
@@ -154,12 +155,12 @@
     }
 }
 
-.lzy_popup_close {
+.lzy_popup_close_1 {
     transform: scale(.8, .8);
-    animation: lzyPopupClose .1s 1;
+    animation: lzyPopupClose_1 .3s 1;
 }
 
-@keyframes lzyPopupClose {
+@keyframes lzyPopupClose_1 {
     0% {
         opacity: 1;
         -webkit-transform: scale(1)
@@ -171,5 +172,185 @@
     100% {
         opacity: .5;
         -webkit-transform: scale(.5)
+    }
+}
+
+/*******收缩风格**********************************/
+.lzy_popup_show_2 {
+    transform: scale(1, 1);
+    animation: lzyPopupShow_2 .3s 1;
+}
+
+@keyframes lzyPopupShow_2 {
+    0% {
+        opacity: .5;
+        transform: scale(3.5)
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+
+.lzy_popup_close_2 {
+    transform: scale(.2);
+    animation: lzyPopupClose_2 .3s 1;
+}
+
+@keyframes lzyPopupClose_2 {
+    0% {
+        -webkit-transform: scale(1)
+    }
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(0)
+    }
+}
+
+/****旋转风格**************/
+.lzy_popup_show_3 {
+    transform: translateX(0) rotate(0);
+    animation: lzyPopupShow_3 .3s 1;
+}
+
+@keyframes lzyPopupShow_3 {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%) rotate(-120deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0) rotate(0);
+    }
+}
+
+.lzy_popup_close_3 {
+    transform: rotate(180deg);
+    animation: lzyPopupClose_3 .3s 1;
+}
+
+@keyframes lzyPopupClose_3 {
+    0% {
+        opacity: 1;
+        transform: translateX(0) rotate(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(150%) rotate(120deg);
+    }
+}
+
+/****下滑风格**************/
+.lzy_popup_show_4 {
+    transform: translateY(0);
+    animation: lzyPopupShow_4 .3s 1;
+}
+
+@keyframes lzyPopupShow_4 {
+    0% {
+        opacity: 0;
+        transform: translateY(-150%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.lzy_popup_close_4 {
+    transform: translateY(180%);
+    animation: lzyPopupClose_4 .3s 1;
+}
+
+@keyframes lzyPopupClose_4 {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(180%);
+    }
+}
+
+/****上滑风格**************/
+.lzy_popup_show_5 {
+    transform: translateY(0);
+    animation: lzyPopupShow_5 .3s 1;
+}
+
+@keyframes lzyPopupShow_5 {
+    0% {
+        opacity: 0;
+        transform: translateY(150%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.lzy_popup_close_5 {
+    transform: translateY(-180%);
+    animation: lzyPopupClose_5 .3s 1;
+}
+
+@keyframes lzyPopupClose_5 {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-180%);
+    }
+}
+
+/****抖动风格**************/
+.lzy_popup_show_6 {
+    transform: translateY(0);
+    animation: lzyPopupShow_6 .3s 1;
+}
+
+@keyframes lzyPopupShow_6 {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-10px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.lzy_popup_close_6 {
+    transform: translateY(-180%);
+    animation: lzyPopupClose_6 .3s 1;
+}
+
+@keyframes lzyPopupClose_6 {
+    0% {
+        transform: translateX(0);
+    }
+
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-10px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(10px);
+    }
+    100% {
+        opacity: .3;
+        transform: translateX(0);
     }
 }

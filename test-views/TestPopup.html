@@ -15,7 +15,7 @@
     <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.1.js"></script>
 
     <script>
-        var mypops = new Array(39);
+        var mypops = new Array(40);
 
         $(function () {
             //---------------------------
@@ -266,23 +266,28 @@
             }).addButton("确定", function () {
                 alert("点击了确定");
             }).addButton("取消");
+
+            //---------------------------
+            mypops[38] = $.initPopup().addButton("确定", function () {
+                alert("点击了确定");
+            }).addButton("取消");
             //---------------------------
 
-            mypops[38] = $.initPopup().addButton("我的子弹框", function () {
-                if (!sonOfpop38) sonOfpop38 = $.initPopup({}).addButton("取消");
+            mypops[39] = $.initPopup().addButton("我的子弹框", function () {
+                if (!sonOfpop39) sonOfpop39 = $.initPopup({}).addButton("取消");
 
-                var rect = mypops[38].getRect();//获取父弹框的位置，用于设置子弹框的位置
+                var rect = mypops[39].getRect();//获取父弹框的位置，用于设置子弹框的位置
 
                 //这里的子弹框是使用内嵌绝对位置设置的
-                sonOfpop38.setStyle({
+                sonOfpop39.setStyle({
                     relativePosition: (rect.left + rect.width) + "," + rect.top
                 }).showPopup("我是子弹框");
             }).addButton("取消").onClose(function () {
-                sonOfpop38.closePopup();
+                sonOfpop39.closePopup();
             });
         });
 
-        var sonOfpop38;
+        var sonOfpop39;
 
         function showPopup(index, content) {
             if (index === 7) {
@@ -299,12 +304,20 @@
                 }).showPopup("框高自定义：" + k_g[0] + "*" + k_g[1]);
                 return false;
             }
+
+
             if (index === 37) {
                 var x = $("#pos_x").val();
                 var y = $("#pos_y").val();
                 mypops[index].setStyle({
                     relativePosition: x + "px," + y + "px"
                 }).showPopup("内嵌弹框的自定义位置：" + x + "," + y);
+                return false;
+            }
+
+            if (index === 38) {
+                var animation = $("#animation").find("option:selected").val();
+                mypops[index].setStyle({animation: animation}).showPopup(content);
                 return false;
             }
             mypops[index].showPopup(content);
@@ -403,9 +416,23 @@
             <input type="text" style="width: 25px;" value="200" id="pos_y">
             <input type="button" id="btn37" value="自定义位置" onclick="showPopup(37,'只要在内嵌的时候自定义位置有效');">
         </td>
-        <td><input type="button" id="btn38" value="多重弹框" onclick="showPopup(38,'打开我的子弹框');"></td>
+
+        <td>
+            <select id="animation">
+                <option value="1">弹出</option>
+                <option value="2">收缩</option>
+                <option value="3">旋转</option>
+                <option value="4">下滑</option>
+                <option value="5">上滑</option>
+                <option value="6">抖动</option>
+            </select>
+            <input type="button" id="btn38" value="弹出风格" onclick="showPopup(38,'弹框弹出风格动画');">
+        </td>
     </tr>
 
+    <tr>
+        <td><input type="button" id="btn39" value="多重弹框" onclick="showPopup(39,'打开我的子弹框');"></td>
+    </tr>
     </tbody>
 </table>
 
