@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index5</title>
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../custom-plugins/custom-utils/jquery.custom.utils.js"></script>
+
+</head>
+<body>
+<input type="text" id="type" value="month"><br>
+<input type="text" id="num" value="5"><br>
+<input type="text" id="time" value="2018-12-14"><br>
+<input type="text" id="time2" value="2018-12-14"><br>
+
+<input type="button" id="check" value="检测">
+</body>
+</html>
+<script>
+    $(function () {
+        var arr = [{val: 3}, {val: 2}, {val: 5}];
+        var val = 1234.423433;
+        var str = "23244.134234";
+        $("#check").on("click", function () {
+//            console.log(TimeTool.getIntDateBefore($("#type").val(), $("#num").val(), $("#time").val())); #eb91ea rgb(235,145,234)
+
+            console.log(ColorTool.toRGB("#eb91ea"));
+
+        });
+    });
+</script>
