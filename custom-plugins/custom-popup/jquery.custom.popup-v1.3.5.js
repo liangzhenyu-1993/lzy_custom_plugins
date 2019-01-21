@@ -5,7 +5,7 @@
 */
 
 /*
-插件-弹框提示-v1.3.1(可以展示大内容，也可以是确认框)
+插件-弹框提示-v1.3.5(可以展示大内容，也可以是确认框)
 使用方法说明：
     1.此插件基于jQuery编写，使用时需要先导入jQuery
     2.获取对象
@@ -28,11 +28,16 @@
     7.移除框低按钮
         myPop.removeButton(nameOrIndex);
         nameOrIndex:按键的名称或者按键所在的下标
-    8.获取本弹框自身绝对位置相关值
-        myPop.getRect();
-        返回值:{top,left,bottom,right,width,height}
-    9.关闭右上按键事件
-        myPop.onClose(callback);
+    8.获取本弹框状态
+        myPop.getStatus();
+        返回值:{
+            status: true/false，弹框的状态，true为开启状态，false为关闭状态，
+            rect:{top,left,bottom,right,width,height}，弹框绝对位置相关值,
+            version:版本
+        }
+    9.弹框开启关闭回调事件
+        myPop.on(type,callback);
+        type:"open"开启，"close"关闭两种类型，按照jquery的on方法使用习惯配置便可
         callback:回调函数
  参数说明：
     cfg:{
@@ -44,9 +49,9 @@
         themeStyle:主题风格，目前有两种："default"和"dimnav",默认值:"default",
         animation:弹框弹出风格动画，1、弹出；2、收缩；3、旋转；4、下滑；5、上滑；6、抖动
         isShowShadow:是否显示边框阴影,默认为true,
-        shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为10px，
+        shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为12px，
         isShowIcon:是否显示左上图标,默认:true,
-        icon:图标的图片（可以是路径，也可以是图片base64编码）,
+        icon:图标的图片（可以是路径；也可以是图片base64编码；也可以直接是字符，比如：'!','?'）,
         allowedFullscreen:是否允许全屏，即是否添加全屏按键，默认值：false,
         allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
         content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
@@ -54,12 +59,21 @@
         title:弹框标题,
         buttonAlign:按键对齐方式，left,center和right三种方式,
         isShowBg:是否显示背景,默认：false,
+        isClickBgClose:是否点击背景关闭弹框，默认：true，
         allowedMove:是否允许移动,默认：false,
-        targetSelector:目标选择器，用于弹框设置位置的相对节点，默认：body节点，
+        targetSelector:参照目标，用于弹框设置位置的相对节点，默认：'window'，相对于屏幕设置位置（这样能保证绝对定位），强调：这个'window'不是选择器，这个只是标识绝对定位的意思；
+            其他比如：body，div，#myId，.myClass等节点或选择器，这些是用于设置相对位置（必须是真实的节点或选择器）
         insideOrFollow:弹框类型设置，“inside”和“follow”两种类型(内嵌和跟随)，默认“inside”，内嵌或跟随(targetSelector)显示,
-        relativePosition:弹框相对目标选择器的位置，insideOrFollow值为“inside”时默认中间：center，可选值：top，bottom,left，right及组合方位词，也可以是"x,y"的绝对定位；insideOrFollow值为“follow”时默认右下：right bottom，可选值：top，bottom,left，right及组合方位词
-        relativeOffset: 弹框与目标相对偏差位置，默认偏移10px
+        relativePosition:弹框相对目标选择器的位置，
+            当'insideOrFollow' 值为“inside”时默认中间：center，可选值：top，bottom,left，right及组合方位词，也可以是"x,y"的绝对定位；
+            当'insideOrFollow' 值为“follow”时默认右下：right bottom，可选值：top，bottom,left，right及组合方位词
+        relativeOffset: 弹框与目标相对偏差位置（就是弹框和targetSelector的距离有多远），默认偏移10px
     }
+    注：参数配置里没有 z-index 配置项，如果需要配置请自行直接修改css文件 .lzy_custom_bg 和 .lzy_custom_popup 两个类
+
+
+  另：作者我没有按照 打开弹框时便插入节点，关闭弹框时移除节点 的流程。是因为弹框的按钮以及弹框内容部分可能开发者需要对里面的控件添加事件，如果移除节点将导致事件失效。
+    但为了保持美观，编写一个弹框使用一个大 DIV 包括
  */
 ;(function ($, window, document, undefined) {
     $.extend({
@@ -70,44 +84,35 @@
              * @returns {*} rgb值
              */
             var toRGB = function (color) {
-                eval(function (p, a, c, k, e, d) {
-                    e = function (c) {
-                        return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
-                    };
-                    if (!''.replace(/^/, String)) {
-                        while (c--) d[e(c)] = k[c] || e(c);
-                        k = [function (e) {
-                            return d[e]
-                        }];
-                        e = function () {
-                            return '\\w+'
-                        };
-                        c = 1;
+                color = color.toLowerCase();
+                var _EN_COLOR = '{"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff","beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887","cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff","darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b886b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f","darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1","darkviolet":"#9400d3","deeppink":"#ff1493","deepskyblue":"#00bfff","dimgray":"#696969","dodgerblue":"#1e90ff","feldspar":"#d19275","firebrick":"#b22222","floralwhite":"#fffaf0","forestgreen":"#228b22","fuchsia":"#ff00ff","gainsboro":"#dcdcdc","ghostwhite":"#f8f8ff","gold":"#ffd700","goldenrod":"#daa520","gray":"#808080","green":"#008000","greenyellow":"#adff2f","honeydew":"#f0fff0","hotpink":"#ff69b4","indianred":"#cd5c5c","indigo":"#4b0082","ivory":"#fffff0","khaki":"#f0e68c","lavender":"#e6e6fa","lavenderblush":"#fff0f5","lawngreen":"#7cfc00","lemonchiffon":"#fffacd","lightblue":"#add8e6","lightcoral":"#f08080","lightcyan":"#e0ffff","lightgoldenrodyellow":"#fafad2","lightgrey":"#d3d3d3","lightgreen":"#90ee90","lightpink":"#ffb6c1","lightsalmon":"#ffa07a","lightseagreen":"#20b2aa","lightskyblue":"#87cefa","lightslateblue":"#8470ff","lightslategray":"#778899","lightsteelblue":"#b0c4de","lightyellow":"#ffffe0","lime":"#00ff00","limegreen":"#32cd32","linen":"#faf0e6","magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee","mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","mintcream":"#f5fffa","mistyrose":"#ffe4e1","moccasin":"#ffe4b5","navajowhite":"#ffdead","navy":"#000080","oldlace":"#fdf5e6","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6","palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","papayawhip":"#ffefd5","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080","red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1","saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","seashell":"#fff5ee","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","snow":"#fffafa","springgreen":"#00ff7f","steelblue":"#4682b4","tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0","violet":"#ee82ee","violetred":"#d02090","wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5","yellow":"#ffff00","yellowgreen":"#9acd32"}';
+                var _Hex2RGB = function (color) {
+                    var i = 0, arrColor = [];
+                    if (color.length === 4) {
+                        var nColor = "#";
+                        for (i = 1; i < 4; i += 1) nColor += color.slice(i, i + 1).concat(color.slice(i, i + 1));
+                        color = nColor;
                     }
-                    while (c--) if (k[c]) p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c]);
-                    return p;
-                }('28 29={2a:{r:4,g:p,b:1},27:{r:3,g:B,b:W},23:{r:0,g:1,b:1},24:{r:i,g:1,b:26},2b:{r:4,g:1,b:1},2g:{r:6,g:6,b:d},2h:{r:1,g:y,b:Y},2i:{r:0,g:0,b:0},2f:{r:1,g:B,b:7},2c:{r:0,g:0,b:1},2d:{r:2e,g:43,b:1Q},1R:{r:s,g:42,b:42},1S:{r:n,g:N,b:D},1P:{r:1M,g:1N,b:l},1O:{r:i,g:1,b:0},1T:{r:u,g:a,b:30},1Y:{r:1,g:i,b:1Z},22:{r:P,g:1X,b:1U},1V:{r:1,g:p,b:d},1W:{r:d,g:20,b:15},2C:{r:0,g:1,b:1},2D:{r:0,g:0,b:5},2E:{r:0,g:5,b:5},2B:{r:N,g:2y,b:11},2z:{r:z,g:z,b:z},2A:{r:0,g:P,b:0},2F:{r:2K,g:2L,b:q},2M:{r:5,g:0,b:5},2J:{r:13,g:q,b:47},2G:{r:1,g:F,b:0},2H:{r:S,g:o,b:14},2I:{r:5,g:0,b:0},2n:{r:2o,g:2p,b:I},2m:{r:m,g:J,b:m},2j:{r:10,g:2k,b:5},2l:{r:47,g:Q,b:Q},2q:{r:0,g:C,b:A},2v:{r:2w,g:0,b:h},2x:{r:1,g:20,b:w},2u:{r:0,g:12,b:1},2r:{r:a,g:a,b:a},2s:{r:30,g:e,b:1},2t:{r:A,g:1L,b:1i},1h:{r:V,g:34,b:34},1g:{r:1,g:3,b:4},1n:{r:34,g:5,b:34},1o:{r:1,g:0,b:1},1m:{r:d,g:d,b:d},16:{r:p,g:p,b:1},1b:{r:1,g:W,b:0},1E:{r:v,g:s,b:32},1F:{r:2,g:2,b:2},1C:{r:0,g:2,b:0},1G:{r:x,g:1,b:47},1H:{r:4,g:1,b:4},1t:{r:1,g:a,b:G},1u:{r:7,g:M,b:M},1r:{r:1y,g:0,b:E},1v:{r:1,g:1,b:4},1w:{r:4,g:9,b:F},1z:{r:9,g:9,b:3},1D:{r:1,g:4,b:6},1p:{r:1c,g:1a,b:0},1d:{r:1,g:3,b:7},1e:{r:x,g:f,b:9},1k:{r:4,g:2,b:2},1l:{r:j,g:1,b:1},1J:{r:3,g:3,b:u},1K:{r:h,g:h,b:h},1I:{r:e,g:8,b:e},1A:{r:1,g:1s,b:1x},1q:{r:1,g:l,b:I},1B:{r:32,g:V,b:t},18:{r:D,g:C,b:3},17:{r:1f,g:c,b:1},1j:{r:4o,g:4t,b:S},3Q:{r:X,g:Y,b:n},3P:{r:1,g:1,b:j},3S:{r:0,g:1,b:0},3K:{r:o,g:7,b:o},3X:{r:3,g:4,b:9},40:{r:1,g:0,b:1},3Y:{r:2,g:0,b:0},3Z:{r:3V,g:7,b:t},3W:{r:0,g:0,b:7},49:{r:4a,g:13,b:h},4b:{r:w,g:c,b:f},41:{r:15,g:K,b:44},48:{r:3U,g:3L,b:8},3M:{r:0,g:3,b:U},3N:{r:10,g:A,b:14},3I:{r:3J,g:21,b:R},3R:{r:25,g:25,b:c},3T:{r:6,g:1,b:3},3O:{r:1,g:y,b:H},4c:{r:1,g:y,b:4s},4u:{r:1,g:n,b:x},4p:{r:0,g:0,b:2},4q:{r:4r,g:6,b:9},4x:{r:2,g:2,b:0},4w:{r:q,g:4v,b:35},4g:{r:1,g:s,b:0},4h:{r:1,g:L,b:0},4f:{r:v,g:c,b:4d},4e:{r:8,g:4i,b:t},4m:{r:T,g:4n,b:T},4l:{r:4j,g:8,b:8},4k:{r:f,g:c,b:w},37:{r:1,g:38,b:39},31:{r:1,g:v,b:33},36:{r:7,g:R,b:3a},3e:{r:1,g:k,b:3f},3g:{r:Z,g:l,b:Z},3b:{r:X,g:j,b:9},3c:{r:2,g:0,b:2},3d:{r:1,g:0,b:0},2Q:{r:J,g:m,b:m},2R:{r:2S,g:a,b:H},2N:{r:5,g:L,b:19},2O:{r:3,g:2,b:2P},2T:{r:2X,g:2Y,b:2Z},2U:{r:46,g:5,b:2V},2W:{r:1,g:6,b:8},3h:{r:l,g:3y,b:45},3z:{r:k,g:k,b:k},3A:{r:D,g:C,b:B},3v:{r:3w,g:3x,b:7},3B:{r:c,g:2,b:e},3F:{r:1,g:3,b:3},3G:{r:0,g:1,b:i},3H:{r:3C,g:E,b:G},3D:{r:u,g:G,b:F},3E:{r:0,g:2,b:2},3l:{r:f,g:12,b:f},3m:{r:1,g:3n,b:3i},3j:{r:3k,g:j,b:O},3o:{r:8,g:E,b:8},3s:{r:O,g:32,b:e},3t:{r:6,g:n,b:K},3u:{r:1,g:1,b:1},3p:{r:6,g:6,b:6},3q:{r:1,g:1,b:0},3r:{r:U,g:7,b:o}};', 62, 282, '|255|128|250|240|139|245|205|238|230|105||112|220|144|216||211|127|224|192|160|143|222|50|248|107||165|170|210|218|147|173|228|169|209|235|206|135|130|140|180|225|122|188|179|69|92|184|208|100|79|133|153|152|154|178|215|176|196|221|72||191|85|204|60|ghostwhite|lightslateblue|lightskyblue||252|gold|124|lemonchiffon|lightblue|132|floralwhite|firebrick|117|lightslategray|lightcoral|lightcyan|gainsboro|forestgreen|fuchsia|lawngreen|lightsalmon|indigo|182|hotpink|indianred|ivory|khaki|193|75|lavender|lightpink|lightseagreen|green|lavenderblush|goldenrod|gray|greenyellow|honeydew|lightgreen|lightgoldenrodyellow|lightgrey|146|95|158|chartreuse|cadetblue|226|brown|burlywood|chocolate|237|cornsilk|crimson|149|coral|80|||cornflowerblue|aqua|aquamarine||212|antiquewhite|var|EN_COLOR|aliceblue|azure|blue|blueviolet|138|blanchedalmond|beige|bisque|black|darkslateblue|61|darkslategray|darkseagreen|darksalmon|233|150|darkturquoise|dimgray|dodgerblue|feldspar|deepskyblue|darkviolet|148|deeppink|134|darkgray|darkgreen|darkgoldenrod|cyan|darkblue|darkcyan|darkkhaki|darkorange|darkorchid|darkred|darkolivegreen|189|183|darkmagenta|saddlebrown|salmon|114|rosybrown|royalblue|65|sandybrown|seagreen|87|seashell|244|164|96||peachpuff||185|||peru|papayawhip|239|213|63|powderblue|purple|red|pink|203|plum|sienna|71|turquoise|64|thistle|tomato|99|violet|whitesmoke|yellow|yellowgreen|violetred|wheat|white|slateblue|106|90|82|silver|skyblue|slategray|70|tan|teal|snow|springgreen|steelblue|mediumvioletred|199|limegreen|104|mediumspringgreen|mediumturquoise|mistyrose|lightyellow|lightsteelblue|midnightblue|lime|mintcream|123|102|mediumblue|linen|maroon|mediumaquamarine|magenta|mediumseagreen|||113||||mediumslateblue|mediumorchid|186|mediumpurple|moccasin|214|palegoldenrod|orchid|orange|orangered|232|175|palevioletred|paleturquoise|palegreen|251|119|navy|oldlace|253|181|136|navajowhite|142|olivedrab|olive'.split('|'), 0, {}));
-                var sColor = color.toLowerCase();
-                if (sColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(sColor)) {
-                    if (sColor.length === 4) {
-                        var sColorNew = "#";
-                        for (var i = 1; i < 4; i += 1) sColorNew += sColor.slice(i, i + 1).concat(sColor.slice(i, i + 1));
-                        sColor = sColorNew;
-                    }
-                    var sColorChange = [];
-                    for (var i = 1; i < 7; i += 2) sColorChange.push(parseInt("0x" + sColor.slice(i, i + 2)));
-                    return "rgb(" + sColorChange[0] + "," + sColorChange[1] + "," + sColorChange[2] + ")";
-                } else if (sColor.indexOf("rgb") >= 0) {
-                    if (sColor.indexOf("%") >= 0) {
-                        var arrRgb = sColor.replace("rgb(", "").replace(")", "").replace(/%/g, "").split(",");
+                    for (i = 1; i < 7; i += 2) arrColor.push(parseInt("0x" + color.slice(i, i + 2)));
+                    return "rgb(" + arrColor[0] + "," + arrColor[1] + "," + arrColor[2] + ")";
+                };
+                if (color.indexOf("rgba") >= 0) {
+                    return color;
+                } else if (color && /^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(color)) {
+                    return _Hex2RGB(color);
+                } else if (color.indexOf("rgb") >= 0) {
+                    if (color.indexOf("%") >= 0) {
+                        var arrRgb = color.replace("rgb(", "").replace(")", "").replace(/%/g, "").split(",");
                         return "rgb(" + parseInt(arrRgb[0] / 100 * 255) + "," + parseInt(arrRgb[1] / 100 * 255) + "," + parseInt(arrRgb[2] / 100 * 255) + ")";
-                    } else {
-                        return sColor;
                     }
+                    return color;
                 } else {
-                    var rgbObj = EN_COLOR[sColor];
-                    if (!rgbObj) return null;
-                    return "rgb(" + rgbObj.r + "," + rgbObj.g + "," + rgbObj.b + ")";
+                    var hexColor = JSON.parse(_EN_COLOR)[color];
+                    if (!hexColor) {
+                        console.error("抱歉！无该英文颜色");
+                        return color;
+                    }
+                    return _Hex2RGB(hexColor);
                 }
             };
             /**
@@ -143,14 +148,13 @@
                 var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
                 var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
                 if (isIE) {
-                    var reIE = new RegExp("MSIE (\\d+\\.\\d+);");
-                    reIE.test(userAgent);
-                    var fIEVersion = parseInt(RegExp["$1"]);
-                    if (fIEVersion === 7) return 7;
-                    else if (fIEVersion === 8) return 8;
-                    else if (fIEVersion === 9) return 9;
-                    else if (fIEVersion === 10) return 10;
-                    else return 0;
+                    new RegExp("MSIE (\\d+\\.\\d+);").test(userAgent);
+                    var ieV = parseInt(RegExp["$1"]);
+                    if (ieV === 7) return 7;
+                    else if (ieV === 8) return 8;
+                    else if (ieV === 9) return 9;
+                    else if (ieV === 10) return 10;
+                    else return 1;
                 }
                 if (isEdge) return "edge";
                 if (isIE11) return 11;
@@ -164,19 +168,39 @@
                 return navigator.userAgent.indexOf("Firefox") > -1;
             };
             /**
+             * 用来给弹框判断是否使用屏幕作参照对象
+             * @param ele 节点
+             * @returns {boolean}
+             */
+            var isReferScreen = function (ele) {
+                return !ele || ele === "window" || ele === "document" || ele === "screen" || ele === window || ele === document;
+            };
+            /**
+             * 获取body下的所有子节点中最大的zIndex值
+             */
+            var getMaxZIndex = function () {
+                var arr = [], $objs = $("body>*");
+                for (var i = 0; i < $objs.length; i++) {
+                    var z = $($objs[i]).css("zIndex");
+                    arr.push(isNaN(z) ? 0 : z);
+                }
+                var maxZIndex = arr.length ? Math.max.apply(null, arr) : 0;
+                return maxZIndex > 999999 ? maxZIndex + 1 : 1000000;
+            };
+            /**
              * 弹框的主体入口方法
              * @param cfg 配置
              */
             var lzyPopup = function (cfg) {
-                this.popupObj = null;
-                this.bgObj = null;
+                this.version = "v1.3.5";
                 this.cfg = null;
                 this.fullTemp = {full: false};
-                this.closeEvent = null;
-                this.bgObj = $("<div class='lzy_custom_bg'></div>").appendTo("body");
-                this.popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div><div class='lzy_nav_title'>消息</div><svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg><div class='lzy_nav_full'></div></div><div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>").appendTo("body");
-                this.zoominBtnTxt = "<svg><rect x='4' y='4' width='10' height='10' style='stroke: %color' /></svg>";
-                this.zoomoutBtnTxt = "<svg><rect x='4' y='6' width='8' height='8' style='stroke: %color'/><line x1='5' y1='4' x2='14' y2='4' style='stroke: %color'/><line x1='14' y1='3' x2='14' y2='13' style='stroke: %color'/></svg>";
+                this.openEvents = [];
+                this.closeEvents = [];
+                this.$bgObj = $("<div class='lzy_custom_bg'></div>");
+                this.$popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div><div class='lzy_nav_title'>消息</div><svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg><div class='lzy_nav_full'></div></div><div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>");
+                this.zoominBtn = "<svg><rect x='4' y='4' width='10' height='10' style='stroke: %color' /></svg>";
+                this.zoomoutBtn = "<svg><rect x='4' y='6' width='8' height='8' style='stroke: %color'/><line x1='5' y1='4' x2='14' y2='4' style='stroke: %color'/><line x1='14' y1='3' x2='14' y2='13' style='stroke: %color'/></svg>";
                 this.zoomBtnColor = "";
                 this.setStyle(cfg, true);
             };
@@ -205,10 +229,11 @@
                             title: cfg.title || null,
                             buttonAlign: cfg.buttonAlign || 'right',
                             isShowShadow: isEmpty(cfg.isShowShadow) ? true : cfg.isShowShadow,
-                            shadowSize: isEmpty(cfg.shadowSize) ? 10 : cfg.shadowSize,
+                            shadowSize: isEmpty(cfg.shadowSize) ? 12 : cfg.shadowSize,
                             isShowBg: cfg.isShowBg,
+                            isClickBgClose: isEmpty(cfg.isClickBgClose) ? true : cfg.isClickBgClose,
                             allowedMove: cfg.allowedMove,
-                            targetSelector: cfg.targetSelector || 'body',
+                            targetSelector: cfg.targetSelector || 'window',
                             insideOrFollow: (cfg.insideOrFollow || 'inside').toLowerCase(),
                             relativePosition: (cfg.relativePosition || 'center').toLowerCase(),
                             relativeOffset: isEmpty(cfg.relativeOffset) ? 10 : cfg.relativeOffset
@@ -234,6 +259,7 @@
                             isShowShadow: !isEmpty(cfg.isShowShadow) ? cfg.isShowShadow : this.cfg.isShowShadow,
                             shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
                             isShowBg: !isEmpty(cfg.isShowBg) ? cfg.isShowBg : this.cfg.isShowBg,
+                            isClickBgClose: !isEmpty(cfg.isClickBgClose) ? cfg.isClickBgClose : this.cfg.isClickBgClose,
                             allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : this.cfg.allowedMove,
                             targetSelector: cfg.targetSelector || this.cfg.targetSelector,
                             insideOrFollow: (cfg.insideOrFollow || this.cfg.insideOrFollow).toLowerCase(),
@@ -243,40 +269,40 @@
                     }
                     //配置样式
                     var that = this;
-                    this.popupObj.css({
+                    this.$popupObj.off("click").on("click", function (e) {
+                        e.stopPropagation();
+                        if (that.cfg.isShowBg) that.$bgObj.css("z-index", getMaxZIndex());
+                        else that.$popupObj.css("z-index", getMaxZIndex())
+                    });
+                    this.$popupObj.css({
                         'width': this.cfg.width,
                         'height': this.cfg.height,
-                        // 'margin-left': -Math.floor(this.cfg.width / 2) + "px",
-                        // 'margin-top': -Math.floor(this.cfg.height / 2) + "px",
                         'border': this.cfg.border,
                         'border-radius': this.cfg.borderRadius
                     }).find(".lzy_popup_footer").css({
                         'text-align': cfg.buttonAlign
                     });
-                    this.popupObj.css({'border-color': this.cfg.themeColor});
-                    this.popupObj.find(".lzy_popup_nav").css({'border-bottom-color': this.cfg.themeColor});
+                    this.$popupObj.css({'border-color': this.cfg.themeColor});
+                    this.$popupObj.find(".lzy_popup_nav").css({'border-bottom-color': this.cfg.themeColor});
 
                     if (this.cfg.themeStyle === "default") {
-                        this.popupObj.find(".lzy_popup_nav").css({'background-color': this.cfg.themeColor});
-                        this.popupObj.find(".lzy_nav_icon").css({'border-color': '#fff', 'color': '#fff'});
-                        this.popupObj.find(".lzy_nav_title").css({'color': '#fff'});
-                        this.popupObj.find(".lzy_nav_close").find("line").css({'stroke': '#fff'});
+                        this.$popupObj.find(".lzy_popup_nav").css({'background-color': this.cfg.themeColor});
+                        this.$popupObj.find(".lzy_nav_icon").css({'border-color': '#fff', 'color': '#fff'});
+                        this.$popupObj.find(".lzy_nav_title").css({'color': '#fff'});
+                        this.$popupObj.find(".lzy_nav_close").find("line").css({'stroke': '#fff'});
                         this.zoomBtnColor = '#fff';
                     }
-
-
                     if (this.cfg.themeStyle === "dimnav") {
-                        this.popupObj.find(".lzy_popup_nav").css({'background-color': dimColor(this.cfg.themeColor, .15)});
-                        this.popupObj.find(".lzy_nav_icon").css({
+                        this.$popupObj.find(".lzy_popup_nav").css({'background-color': dimColor(this.cfg.themeColor, .15)});
+                        this.$popupObj.find(".lzy_nav_icon").css({
                             'border-color': this.cfg.themeColor,
                             'color': this.cfg.themeColor
                         });
-                        this.popupObj.find(".lzy_nav_title").css({'color': '#000'});
-                        this.popupObj.find(".lzy_nav_close").find("line").css({'stroke': this.cfg.themeColor});
+                        this.$popupObj.find(".lzy_nav_title").css({'color': '#000'});
+                        this.$popupObj.find(".lzy_nav_close").find("line").css({'stroke': this.cfg.themeColor});
                         this.zoomBtnColor = this.cfg.themeColor;
                     }
-
-                    this.popupObj.find(".lzy_nav_close").off("mouseenter mouseleave click").hover(function () {
+                    this.$popupObj.find(".lzy_nav_close").off("mouseenter mouseleave click").hover(function () {
                         $(this).find("rect").css("fill", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
                     }, function () {
                         $(this).find("rect").css("fill", "rgba(0,0,0,0)");
@@ -284,29 +310,46 @@
                         that.closePopup();
                     });
 
-                    this.bgObj.css('background-color', dimColor(this.cfg.themeColor, .2));
-                    if (this.cfg.isShowShadow) this.popupObj.css({'box-shadow': "0 0 " + this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor});
+                    this.$bgObj.css('background-color', dimColor(this.cfg.themeColor, .2));
+                    //背景是否显示
+                    if (this.cfg.isShowBg) {
+                        this.$bgObj.appendTo("body").append(this.$popupObj);
+                        if (this.cfg.isClickBgClose) {
+                            this.$bgObj.off("click").on("click", function () {
+                                that.closePopup();
+                            });
+                        }
+                    } else this.$popupObj.appendTo("body");
+
+                    //设置边框阴影
+                    this.$popupObj.css({'box-shadow': "0 0 " + (this.cfg.isShowShadow ? this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor : "0")});
+
+                    //是否显示图标
                     if (this.cfg.isShowIcon) {
                         if (this.cfg.icon) {
                             //更换图标
-                            this.popupObj.find(".lzy_nav_icon").css({
-                                'background-image': 'url(' + this.cfg.icon + ')',
-                                'border-radius': 0,
-                                'border': 'none'
-                            }).html("");
+                            if (this.cfg.icon && this.cfg.icon.indexOf("/") >= 0) {
+                                this.$popupObj.find(".lzy_nav_icon").css({
+                                    'background-image': 'url(' + this.cfg.icon + ')',
+                                    'border-radius': 0,
+                                    'border': 'none'
+                                }).html("");
+                            } else {
+                                this.$popupObj.find(".lzy_nav_icon").html(this.cfg.icon);
+                            }
                         }
                     } else {
-                        this.popupObj.find(".lzy_nav_icon").hide();
+                        this.$popupObj.find(".lzy_nav_icon").hide();
                     }
                     //是否允许拖动
                     if (this.cfg.allowedMove) {
                         //拖动事件
-                        that.popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
+                        that.$popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
                             var isMove = true;
-                            var div_x = e.pageX - that.popupObj.offset().left;
-                            var div_y = e.pageY - that.popupObj.offset().top;
+                            var div_x = e.pageX - that.$popupObj.offset().left;
+                            var div_y = e.pageY - that.$popupObj.offset().top;
                             $(document).off("mousemove mouseup").mousemove(function (e) {
-                                if (isMove) that.popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
+                                if (isMove) that.$popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
                             }).mouseup(function () {
                                 isMove = false;
                             });
@@ -314,8 +357,8 @@
                     }
                     //是否允许放大全屏
                     if (this.cfg.allowedFullscreen) {
-                        this.popupObj.find(".lzy_nav_full").show()
-                            .append($(this.zoominBtnTxt.replace(/%color/g, this.zoomBtnColor)))
+                        this.$popupObj.find(".lzy_nav_full").show()
+                            .append($(this.zoominBtn.replace(/%color/g, this.zoomBtnColor)))
                             .off("mouseenter mouseleave click")
                             .hover(function () {
                                 $(this).css("background-color", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
@@ -325,24 +368,24 @@
                             .on("click", function () {
                                 $(this).css("background-color", "rgba(0,0,0,0)");
                                 if ($(this).find("line").length === 0) {
-                                    $(this).html($(that.zoomoutBtnTxt.replace(/%color/g, that.zoomBtnColor)));
+                                    $(this).html($(that.zoomoutBtn.replace(/%color/g, that.zoomBtnColor)));
                                     that.fullTemp = {
-                                        top: that.popupObj.css("top"),
-                                        left: that.popupObj.css("left"),
+                                        top: that.$popupObj.css("top"),
+                                        left: that.$popupObj.css("left"),
                                         full: true
                                     };
                                     //放大动画
-                                    that.popupObj.animate({
+                                    that.$popupObj.animate({
                                         'top': 1,
                                         'left': 1,
-                                        'width': window.innerWidth - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                                        'height': window.innerHeight - that.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                                        'width': window.innerWidth - that.$popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                                        'height': window.innerHeight - that.$popupObj.css("border-left-width").replace("px", "") * 2 - 2
                                     }, "fast");
                                 } else {
-                                    $(this).html($(that.zoominBtnTxt.replace(/%color/g, that.zoomBtnColor)));
+                                    $(this).html($(that.zoominBtn.replace(/%color/g, that.zoomBtnColor)));
                                     that.fullTemp.full = false;
                                     //缩回动画
-                                    that.popupObj.animate({
+                                    that.$popupObj.animate({
                                         'top': that.fullTemp.top,
                                         'left': that.fullTemp.left,
                                         'width': that.cfg.width,
@@ -359,40 +402,39 @@
                         });
                     }
                     //配置标题
-                    if (this.cfg.title) this.popupObj.find(".lzy_nav_title").html(this.cfg.title);
+                    if (this.cfg.title) this.$popupObj.find(".lzy_nav_title").html(this.cfg.title);
                     //配置内容
                     if (this.cfg.content) {
-                        if ($(this.cfg.content).get(0)) this.popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
-                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
+                        if ($(this.cfg.content).get(0)) this.$popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
+                        else this.$popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
                     }
 
-                    //为了适配多种浏览器
-                    if (isIE()) {
-                        this.popupObj.find(".lzy_nav_title").css('line-height', "33px");
-                    }
+                    if (isIE()) this.$popupObj.find(".lzy_nav_title").css('line-height', "33px");//适配IE浏览器样式
                     return this;
                 },
                 showPopup: function (content, title) {
-                    //背景是否显示
-                    if (this.cfg.isShowBg) this.bgObj.show();
+                    try {
+                        for (var i = 0; i < this.openEvents.length; i++) this.openEvents[i].call(this);
+                    } catch (e) {
+                        console.error(e);
+                    }
                     if (this.fullTemp.full) {
                         //全屏状态设置
-                        this.popupObj.css({
+                        this.$popupObj.css({
                             'top': 1,
                             'left': 1,
                             "margin-top": 0,
                             "margin-left": 0,
-                            'width': window.innerWidth - this.popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                            'height': window.innerHeight - this.popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                            'width': window.innerWidth - this.$popupObj.css("border-left-width").replace("px", "") * 2 - 2,
+                            'height': window.innerHeight - this.$popupObj.css("border-left-width").replace("px", "") * 2 - 2
                         });
                     } else {
                         //获取目标选择器的绝对位置
-                        var rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
-                        var rPos = this.cfg.relativePosition, that = this;
+                        var rect, rPos = this.cfg.relativePosition, that = this;
                         var halfW = this.cfg.width / 2, halfH = this.cfg.height / 2, oft = this.cfg.relativeOffset;
                         //设置位置
                         var setCss = function (val1, val2) {
-                            that.popupObj.css({
+                            that.$popupObj.css({
                                 'left': parseFloat(val1) - that.cfg.width / 2,
                                 'top': parseFloat(val2) - that.cfg.height / 2
                             });
@@ -407,7 +449,12 @@
                         };
                         if (this.cfg.insideOrFollow === 'follow') {
                             //跟随状态
-                            this.popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
+                            if (isReferScreen(this.cfg.targetSelector)) {
+                                console.error("无法获取参照节点(targetSelector)的位置，请检查是否使用屏幕作参照对象(targetSelector='window')! \n");
+                                return false;
+                            }
+                            rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
+                            // this.$popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
                             if (checkPos(rPos, "top")) setCss(rect.left + halfW, rect.top - halfH - oft);
                             if (checkPos(rPos, "bottom")) setCss(rect.left + halfW, rect.bottom + halfH + oft);
                             if (checkPos(rPos, "left")) setCss(rect.left - halfW - oft, rect.top + halfH);
@@ -419,6 +466,17 @@
                         } else {
                             //内嵌状态
                             if ("toprightbottomleftcenter".indexOf(rPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
+                                if (isReferScreen(this.cfg.targetSelector)) {
+                                    //绝对定位情况
+                                    rect = {
+                                        width: window.innerWidth,
+                                        height: window.innerHeight,
+                                        top: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        left: 0
+                                    };
+                                } else rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect(); //相对定位情况
                                 if (checkPos(rPos, "top")) setCss(rect.left + rect.width / 2, rect.top + halfH + oft);
                                 if (checkPos(rPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - halfH - oft);
                                 if (checkPos(rPos, "left")) setCss(rect.left + halfW + oft, rect.top + rect.height / 2);
@@ -434,53 +492,66 @@
                                 else setCss(parseFloat(arrpos[0]) + halfW, parseFloat(arrpos[1]) + halfH);
                             }
                         }
+                        if (this.cfg.isShowBg) {
+                            this.$bgObj.css({
+                                width: rect.width,
+                                height: rect.height,
+                                top: rect.top,
+                                left: rect.left
+                            })
+                        }
                     }
 
                     //配置各项底部按键等的样式(因为添加按键是不定性的，后滞的，无法预先在初始化时配置)
-                    if (this.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").length === 0) {
-                        this.popupObj.find(".lzy_popup_cont").css('height', 'calc(100% - 30px)').next().css('height', '0');
+                    if (this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").length === 0) {
+                        this.$popupObj.find(".lzy_popup_cont").css('height', 'calc(100% - 30px)').next().css('height', '0');
                     }
-                    this.popupObj.find(".lzy_popup_footer").css("text-align", this.cfg.buttonAlign);
-                    this.popupObj.find(".lzy_footer_btn").css({
+                    this.$popupObj.find(".lzy_popup_footer").css("text-align", this.cfg.buttonAlign);
+                    this.$popupObj.find(".lzy_footer_btn").css({
                         'border-color': this.cfg.themeColor,
                         'background-color': this.cfg.themeColor
                     });
-                    if (isFire()) this.popupObj.find(".lzy_footer_btn").css({'height': '23px'});
-                    if (isIE()) this.popupObj.find(".lzy_footer_btn").css({'line-height': '24px'});
+                    if (isFire()) this.$popupObj.find(".lzy_footer_btn").css({'height': '23px'});
+                    if (isIE()) this.$popupObj.find(".lzy_footer_btn").css({'line-height': '24px'});
 
-                    this.popupObj.find(".lzy_footer_btn_close").css({
+                    this.$popupObj.find(".lzy_footer_btn_close").css({
                         'color': this.cfg.themeColor,
                         'border-color': this.cfg.themeColor,
                         'background-color': 'white'
                     });
                     //配置标题
-                    if (title) this.popupObj.find(".lzy_nav_title").html(title);
+                    if (title) this.$popupObj.find(".lzy_nav_title").html(title);
                     //配置内容
                     if (content && content !== "") {
-                        if ($(content).get(0)) this.popupObj.find(".lzy_popup_cont").html($(content));//如果时 dom 节点就直接添加
-                        else this.popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
+                        if ($(content).get(0)) this.$popupObj.find(".lzy_popup_cont").html($(content));//如果时 dom 节点就直接添加
+                        else this.$popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
                     }
-                    for (var i = 0; i < 10; i++) this.popupObj.removeClass("lzy_popup_close_" + i);
-                    this.popupObj.show().addClass("lzy_popup_show_" + this.cfg.animation);//显示弹框，插入弹出动画样式
+                    for (i = 0; i < 10; i++) this.$popupObj.removeClass("lzy_popup_close_" + i);
+                    if (this.cfg.isShowBg) this.$bgObj.show().css("z-index", getMaxZIndex());
+
+                    this.$popupObj.css("z-index", getMaxZIndex()).show().addClass("lzy_popup_show_" + this.cfg.animation);//显示弹框，插入弹出动画样式
+                    setTimeout(function () {
+                        that.$popupObj.show();
+                    }, 300);
+                    return this;
                 },
                 closePopup: function () {
                     var that = this;
-                    that.popupObj.removeClass("lzy_popup_show_" + this.cfg.animation).addClass("lzy_popup_close_" + this.cfg.animation);//插入弹回动画样式
+                    that.$popupObj.removeClass("lzy_popup_show_" + this.cfg.animation).addClass("lzy_popup_close_" + this.cfg.animation);//插入弹回动画样式
                     setTimeout(function () {
-                        that.popupObj.hide();//隐藏
-                        that.bgObj.hide();//隐藏
-                        if (typeof that.closeEvent === "function") {
-                            try {
-                                that.closeEvent.call(this);//关闭按键回调方法执行
-                            } catch (e) {
-                                console.error(e);
-                            }
+                        that.$popupObj.hide();//隐藏
+                        that.$bgObj.hide();//隐藏
+                        try {
+                            for (var i = 0; i < that.closeEvents.length; i++) that.closeEvents[i].call(that);//关闭按键回调方法执行
+                        } catch (e) {
+                            console.error(e);
                         }
                     }, 280);
+                    return this;
                 },
                 addButton: function (btnName, callback) {
                     var that = this, tempColor;
-                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.popupObj.find(".lzy_popup_footer"))
+                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.$popupObj.find(".lzy_popup_footer"))
                         .on("click", function () {
                             if (callback) callback.call(that);
                             if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) that.closePopup();//给含有“关闭”意思的按键添加关闭事件
@@ -493,31 +564,38 @@
                             $(this).css('background-color', tempColor);
                         });
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
-                    var size = 0, btns = that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                    var size = 0, btns = that.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
                     for (var i = 0; i < btns.length; i++) {
                         var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
                         size += tempSize + 22 + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
                     }
-                    if (size > that.popupObj.width()) that.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
+                    if (size > that.$popupObj.width()) that.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
                     return this;
                 },
                 removeButton: function (nameOrIndex) {
-                    var that = this;
                     if (isNaN(nameOrIndex)) {
                         //非数字即按名称判断按键
-                        var btns = that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                        var btns = this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
                         for (var i = 0; i < btns.length; i++) {
                             if (btns.eq(i).text() === nameOrIndex) btns.eq(i).remove();
                         }
                     } else {
-                        that.popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
+                        this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
                     }
                 },
-                getRect: function () {
-                    return this.popupObj.get(0).getBoundingClientRect();
+                getStatus: function () {
+                    return {
+                        status: this.$popupObj.css("display") !== "none",
+                        rect: this.$popupObj.get(0).getBoundingClientRect(),
+                        version: this.version
+                    };
                 },
-                onClose: function (callback) {
-                    if (callback) this.closeEvent = callback;
+                on: function (type, callback) {
+                    var t = type, c = callback;//允许参数位置动态
+                    if (typeof type === "function") c = type;
+                    if (typeof callback === "string") t = callback;
+                    if (t.toLowerCase().indexOf("open") >= 0) this.openEvents.push(c);
+                    if (t.toLowerCase().indexOf("close") >= 0) this.closeEvents.push(c);
                     return this;
                 }
             };

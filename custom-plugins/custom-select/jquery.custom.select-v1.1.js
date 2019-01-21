@@ -132,18 +132,15 @@
                 var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
                 var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
                 var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
-                if (isIE || isIE11 || isEdge) return true;
-                return false;
+                return isIE || isIE11 || isEdge || false;
             };
             var getObjByType = function () {
                 for (var i = 1; i < arguments.length; i++) if (typeof arguments[i] === arguments[0]) return arguments[i];
                 return null;
             };
             var lzySelect = function (selector, copyStyle, callback) {
-                this._select = null;
                 this._size = 0;
                 this._idx = 0;
-                this._parent = null;
                 this._list = null;
                 this.distance = 2;
                 this._callback = function () {
@@ -153,9 +150,10 @@
                 var isCopyStyle = getObjByType("boolean", selector, copyStyle, callback);
                 var realCallback = getObjByType("function", selector, copyStyle, callback);
                 //----初始化对象，-----------------------------------
-                var _this = this;
+                var that = this;
                 this._select = $(realsSelector);
-                this._parent = $("<div class='lzy_select_parent'><div class='lzy_s_p_content'></div><div class='lzy_s_p_arraw'>﹀</div></div>").insertBefore(this._select.hide());
+                this._parent = $("<div class='lzy_select_parent'><div class='lzy_s_p_content'></div><div class='lzy_s_p_arraw'><svg><line x1='2.5' y1='12.5' x2='10' y2='7.5' style='stroke: rgb(0, 0, 0);'></line><line x1='10' y1='7.5' x2='17.5' y2='12.5' style='stroke: rgb(0, 0, 0);'></line></svg></div></div>")
+                    .insertBefore(this._select.hide());
                 var pStyles = ['position', 'top', 'right', 'left', 'bottom', 'float', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom'];//位置方位的样式必须复制
                 for (var i = 0; i < pStyles.length; i++) this._parent.css(pStyles[i], this._select.css(pStyles[i]));
                 this._list = $("<div class='lzy_select_list'></div>").appendTo("body");
@@ -176,39 +174,45 @@
                         'lineHeight': (isIE() ? this._select.height() + 4 : this._select.height()) + "px",
                         'color': this._select.css("color")
                     });
-                    this._parent.find(".lzy_s_p_arraw").css({
-                        "margin-top": this._select.height() / 2 - this._parent.find(".lzy_s_p_arraw").height() / 2,
-                        "color": this._select.css("border-left-color")
-                    });
 
-                    var lStyles = ['backgroundColor', 'border-radius', 'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', 'border-style', 'border-width', 'box-shadow'];
-                    for (var i = 0; i < lStyles.length; i++) this._list.css(lStyles[i], this._select.css(lStyles[i]));
+                    this._parent.find(".lzy_s_p_arraw").css({
+                        "margin-top": this._parent.height() / 2 - this._parent.find(".lzy_s_p_arraw").height() / 2
+                    }).find("line").css("stroke", this._select.css("border-left-color"));
+
+                    for (var i = 3; i < copyPStyle.length; i++) this._list.css(copyPStyle[i], this._select.css(copyPStyle[i]));
                     this._list.css('width', this._select.outerWidth() - this._select.css("border-width").replace("px", "") * 2);
 
-                    $("<style></style>").text("div.lzy_select_list::-webkit-scrollbar-thumb{background-color:" + this._select.css("border-left-color") + ";}").appendTo($("head"));
                 }
 
-                var listSonWidth = _this._select.width() - _this._select.css("border-width").replace("px", "") * 2 + "px";
-                if (isIE() || navigator.userAgent.indexOf("Firefox") > -1) listSonWidth = (_this._select.width() - _this._select.css("border-width").replace("px", "") * 2 - 15) + "px"; //火狐,ie 的滚动条的宽为15px
+                var listSonWidth;
+                try {
+                    this._list.niceScroll({cursorcolor: this._select.css("border-left-color")});
+                    listSonWidth = that._select.width() - that._select.css("border-width").replace("px", "") * 4 + "px";
+                } catch (e) {
+                    console.error("还没有导入 jquery-nicescroll.js！\n" + e);
+                    listSonWidth = that._select.width() - that._select.css("border-width").replace("px", "") * 2 + "px";
+                    if (isIE() || navigator.userAgent.indexOf("Firefox") > -1) listSonWidth = (that._select.width() - that._select.css("border-width").replace("px", "") * 2 - 15) + "px"; //火狐,ie 的滚动条的宽为15px
+                }
+
 
                 var setList = function () {
-                    _this._list.empty();
-                    var options = _this._select.find("option");
+                    that._list.empty();
+                    var options = that._select.find("option");
                     for (var i = 0; i < options.length; i++) {
                         var attrs = options[i].attributes;
                         var $son = $("<div></div>").attr("title", options[i].text).append(options[i].text);
                         if (isCopyStyle) {
                             $son.css({
-                                'color': _this._select.css("color"),
-                                'padding-left': _this._select.css("padding-left"),
-                                'padding-right': _this._select.css("padding-right"),
-                                'padding-top': _this._select.css("padding-top"),
-                                'padding-bottom': _this._select.css("padding-bottom"),
-                                'line-height': _this._select.height() + "px",
-                                'height': _this._select.height() + "px",
+                                'color': that._select.css("color"),
+                                'padding-left': that._select.css("padding-left"),
+                                'padding-right': that._select.css("padding-right"),
+                                'padding-top': that._select.css("padding-top"),
+                                'padding-bottom': that._select.css("padding-bottom"),
+                                'line-height': that._select.height() + "px",
+                                'height': that._select.height() + "px",
                                 'width': listSonWidth
                             }).hover(function () {
-                                $(this).css("background-color", dimColor(_this._select.css("border-left-color"), .12));
+                                $(this).css("background-color", dimColor(that._select.css("border-left-color"), .12));
                             }, function () {
                                 $(this).css("background-color", "transparent");
                             });
@@ -216,28 +220,28 @@
                         for (var j = 0; j < attrs.length; j++) {
                             if (attrs[j].name !== "class") $son.attr(attrs[j].name, attrs[j].value);
                         }
-                        _this._list.append($son);
-                        if (i === 0) _this._parent.attr("title", $son.attr("selected", true).text()).find(".lzy_s_p_content").html($son.attr("selected", true).text());
+                        that._list.append($son);
+                        if (i === 0) that._parent.attr("title", $son.attr("selected", true).text()).find(".lzy_s_p_content").html($son.attr("selected", true).text());
                     }
-                    _this._size = options.length;
+                    that._size = options.length;
                 };
                 setList();
 
                 //----设置事件，-----------------------------------
-                _this._parent.on("click", function (event) {
+                that._parent.on("click", function (event) {
                     (event || window.event).stopPropagation();
-                    if (_this._list.css("display") === "none") {
-                        _this._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_close").addClass("lzy_s_p_arraw_open");
-                        var rect = _this._parent.get(0).getBoundingClientRect();
+                    if (that._list.css("display") === "none") {
+                        that._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_close").addClass("lzy_s_p_arraw_open");
+                        var rect = that._parent.get(0).getBoundingClientRect();
                         var cTop, aTop;
-                        if (_this._list.height() > document.documentElement.clientHeight - rect.bottom) {//底部无足够空间
-                            cTop = rect.top - _this._list.outerHeight() - _this.distance - 35;
-                            aTop = rect.top - _this._list.outerHeight() - _this.distance;
+                        if (that._list.height() > document.documentElement.clientHeight - rect.bottom) {//底部无足够空间
+                            cTop = rect.top - that._list.outerHeight() - that.distance - 35;
+                            aTop = rect.top - that._list.outerHeight() - that.distance;
                         } else {
-                            cTop = rect.bottom + _this.distance + 35;
-                            aTop = rect.bottom + _this.distance;
+                            cTop = rect.bottom + that.distance + 35;
+                            aTop = rect.bottom + that.distance;
                         }
-                        _this._list.css({
+                        that._list.css({
                             "top": cTop,
                             "left": rect.left,
                             "opacity": 0.3
@@ -246,49 +250,49 @@
                             "opacity": 1
                         }, "fast", "swing");
                     } else {
-                        _this._list.hide();
-                        _this._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
+                        that._list.hide();
+                        that._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
                     }
                 });
 
                 var wheelTime;
                 $(document).click(function () {
-                    _this._list.hide();
-                    _this._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
+                    that._list.hide();
+                    that._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
                 }).on("mousewheel DOMMouseScroll", function () {
                     clearTimeout(wheelTime);
                     wheelTime = setTimeout(function () {
-                        var rect = _this._parent.get(0).getBoundingClientRect();
-                        var top = _this._list.height() > document.documentElement.clientHeight - rect.bottom ?
-                            rect.top - _this._list.outerHeight() - _this.distance : rect.bottom + _this.distance;
-                        _this._list.animate({"top": top}, "fast", "swing");
+                        var rect = that._parent.get(0).getBoundingClientRect();
+                        var top = that._list.height() > document.documentElement.clientHeight - rect.bottom ?
+                            rect.top - that._list.outerHeight() - that.distance : rect.bottom + that.distance;
+                        that._list.animate({"top": top}, "fast", "swing");
                     }, 200);
                 });
 
-                _this._list.on("click", "div", function (event) {
+                that._list.on("click", "div", function (event) {
                     (event || window.event).stopPropagation();
-                    _this._parent.attr("title", $(this).text()).find(".lzy_s_p_content").html($(this).text());
-                    _this._list.hide();
-                    _this._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
-                    _this._idx = $(this).index();
+                    that._parent.attr("title", $(this).text()).find(".lzy_s_p_content").html($(this).text());
+                    that._list.hide();
+                    that._parent.find(".lzy_s_p_arraw").removeClass("lzy_s_p_arraw_open").addClass("lzy_s_p_arraw_close");
+                    that._idx = $(this).index();
                     $(this).attr("selected", true).siblings().removeAttr("selected");
-                    _this._select.find("option[value='" + $(this).attr("value") + "']")
+                    that._select.find("option[value='" + $(this).attr("value") + "']")
                         .attr("selected", true).siblings().attr("selected", false);
-                    _this._select.trigger("change");//保证原来的节点事件正常
-                    _this._callback.call(_this);
-                    if (realCallback) realCallback.call(_this);
+                    that._select.trigger("change");//保证原来的节点事件正常
+                    that._callback.call(that);
+                    if (realCallback) realCallback.call(that);
                 });
 
                 setInterval(function () {
-                    var size = _this._select.find("option").length;
-                    if (_this._size !== size) setList();
-                    var idx = _this._select.find("option:selected").index();
-                    if (_this._idx !== idx) {
-                        var option = _this._select.find("option:selected");
-                        _this._list.find("div").eq(idx).attr("selected", true)
+                    var size = that._select.find("option").length;
+                    if (that._size !== size) setList();
+                    var idx = that._select.find("option:selected").index();
+                    if (that._idx !== idx) {
+                        var option = that._select.find("option:selected");
+                        that._list.find("div").eq(idx).attr("selected", true)
                             .siblings().removeAttr("selected");
-                        _this._parent.attr("title", option.text()).find(".lzy_s_p_content").html(option.text());
-                        _this._idx = idx;
+                        that._parent.attr("title", option.text()).find(".lzy_s_p_content").html(option.text());
+                        that._idx = idx;
                     }
                 }, 300);
             };
@@ -324,13 +328,13 @@
                     return params
                 },
                 setSelected: function (attrName, attrVal) {
-                    var _this = this;
+                    var that = this;
                     setTimeout(function () {
-                        var option = _this._select.find("option[" + attrName + "='" + attrVal + "']");
+                        var option = that._select.find("option[" + attrName + "='" + attrVal + "']");
                         option.attr("selected", true).siblings().attr("selected", false);
-                        _this._list.find("div[" + attrName + "='" + attrVal + "']")
+                        that._list.find("div[" + attrName + "='" + attrVal + "']")
                             .attr("selected", true).siblings().removeAttr("selected");
-                        _this._parent.attr("title", option.text()).find(".lzy_s_p_content").html(option.text());
+                        that._parent.attr("title", option.text()).find(".lzy_s_p_content").html(option.text());
                     }, 300);
                 }
             };

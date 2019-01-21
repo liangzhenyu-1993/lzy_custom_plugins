@@ -20,11 +20,16 @@
 
 .lzy_select_parent > .lzy_s_p_arraw {
     float: left;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     line-height: 22px;
     margin-top: 7px;
     /*font-weight: bold;*/
+}
+
+.lzy_select_parent > .lzy_s_p_arraw svg {
+    width: 100%;
+    height: 100%;
 }
 
 .lzy_s_p_arraw_open {
@@ -76,7 +81,7 @@
 }
 
 .lzy_select_list > div {
-    width: calc(100% - 20px);
+    width: 100%;
     height: 28px;
     padding: 0 10px;
     cursor: pointer;
