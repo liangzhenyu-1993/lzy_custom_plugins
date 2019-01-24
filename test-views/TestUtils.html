@@ -5,33 +5,20 @@
     <title>index5</title>
     <script src="../js/jquery-1.9.1.min.js"></script>
     <script src="../custom-plugins/custom-utils/jquery.custom.utils.js"></script>
+    <script>
+        $(function () {
+            $("#tool").on("click", function () {
+                var color = $("#color").val();
+                console.log("RGB:" + ColorTool.toRGB(color));
+                console.log("HEX:" + ColorTool.toHEX(color));
 
+            });
+        });
+
+    </script>
 </head>
 <body>
-
+<input id="color">
+<input type="button" value="获取" id="tool">
 </body>
 </html>
-<script>
-
-    var isIE = function () {
-        var userAgent = navigator.userAgent;
-        var isIE = userAgent.indexOf("compatible") > -1 && userAgent.indexOf("MSIE") > -1; //判断是否IE<11浏览器
-        var isEdge = userAgent.indexOf("Edge") > -1 && !isIE; //判断是否IE的Edge浏览器
-        var isIE11 = userAgent.indexOf('Trident') > -1 && userAgent.indexOf("rv:11.0") > -1;
-        if (isIE) {
-            new RegExp("MSIE (\\d+\\.\\d+);").test(userAgent);
-            var fIEVersion = parseInt(RegExp["$1"]);
-            if (fIEVersion === 7) return 7;
-            else if (fIEVersion === 8) return 8;
-            else if (fIEVersion === 9) return 9;
-            else if (fIEVersion === 10) return 10;
-            else return 1;
-        }
-        if (isEdge) return "edge";
-        if (isIE11) return 11;
-        return false;
-    };
-    $(function () {
-        $("body").html(isIE());
-    });
-</script>

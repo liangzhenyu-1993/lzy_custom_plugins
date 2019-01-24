@@ -55,9 +55,9 @@
             z-index: -1;
         }
     </style>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.3.5.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.3.5.min.css">
     <script src="../js/jquery-1.9.1.min.js"></script>
-    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.5.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.5.min.js"></script>
 
     <script>
 
@@ -335,7 +335,11 @@
                 sonOfpop39.closePopup();
             });
             //------------------------------------------------------------
-            mypops[40] = $.initPopup({targetSelector: '#referContainer1', isShowBg: true}).addButton("确定", function () {
+            mypops[40] = $.initPopup({
+                targetSelector: '#referContainer1',
+                isShowBg: true,
+                isClickBgClose: false
+            }).addButton("确定", function () {
                 alert("点击了确定");
             }).addButton("取消");
             //------------------------------------------------------------

@@ -85,7 +85,13 @@
              */
             var toRGB = function (color) {
                 color = color.toLowerCase();
-                var _EN_COLOR = '{"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff","beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887","cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff","darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b886b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f","darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1","darkviolet":"#9400d3","deeppink":"#ff1493","deepskyblue":"#00bfff","dimgray":"#696969","dodgerblue":"#1e90ff","feldspar":"#d19275","firebrick":"#b22222","floralwhite":"#fffaf0","forestgreen":"#228b22","fuchsia":"#ff00ff","gainsboro":"#dcdcdc","ghostwhite":"#f8f8ff","gold":"#ffd700","goldenrod":"#daa520","gray":"#808080","green":"#008000","greenyellow":"#adff2f","honeydew":"#f0fff0","hotpink":"#ff69b4","indianred":"#cd5c5c","indigo":"#4b0082","ivory":"#fffff0","khaki":"#f0e68c","lavender":"#e6e6fa","lavenderblush":"#fff0f5","lawngreen":"#7cfc00","lemonchiffon":"#fffacd","lightblue":"#add8e6","lightcoral":"#f08080","lightcyan":"#e0ffff","lightgoldenrodyellow":"#fafad2","lightgrey":"#d3d3d3","lightgreen":"#90ee90","lightpink":"#ffb6c1","lightsalmon":"#ffa07a","lightseagreen":"#20b2aa","lightskyblue":"#87cefa","lightslateblue":"#8470ff","lightslategray":"#778899","lightsteelblue":"#b0c4de","lightyellow":"#ffffe0","lime":"#00ff00","limegreen":"#32cd32","linen":"#faf0e6","magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee","mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","mintcream":"#f5fffa","mistyrose":"#ffe4e1","moccasin":"#ffe4b5","navajowhite":"#ffdead","navy":"#000080","oldlace":"#fdf5e6","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6","palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","papayawhip":"#ffefd5","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080","red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1","saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","seashell":"#fff5ee","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","snow":"#fffafa","springgreen":"#00ff7f","steelblue":"#4682b4","tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0","violet":"#ee82ee","violetred":"#d02090","wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5","yellow":"#ffff00","yellowgreen":"#9acd32"}';
+                var _EN_COLOR = function () {
+                    var placeholder = "N,O,P,Q,R,S,T,U,V,W,X,Y,Z,M,L,K,J".split(",");
+                    var replace = "dark,deep,light,medium,white,red,black,aqua,green,blue,yellow,orange,pink,00,ff,80,ee".split(",");
+                    var strEnColor = '{"aliceW":"f0f8L","antiqueR":"faebd7","U":"MLL","Umarine":"7Lfd4","azure":"f0LL","beige":"f5f5dc","bisque":"Le4c4","T":"MMM","blanchedalmond":"Lebcd","W":"MML","Wviolet":"8a2be2","brown":"a52a2a","burlywood":"deb887","cadetW":"5f9ea0","chartreuse":"7LfM","chocolate":"d2691e","coral":"L7f50","cornflowerW":"6495ed","cornsilk":"Lf8dc","crimson":"dc143c","cyan":"MLL","NW":"MM8b","Ncyan":"M8b8b","Ngoldenrod":"b886b","Ngray":"a9a9a9","NV":"M64M","Nkhaki":"bdb76b","Nmagenta":"8bM8b","NoliveV":"556b2f","NY":"L8cM","Norchid":"9932cc","NS":"8bMM","Nsalmon":"e9967a","NseaV":"8fbc8f","NslateW":"483d8b","Nslategray":"2f4f4f","Nturquoise":"Mced1","Nviolet":"94Md3","OZ":"L1493","OskyW":"MbLf","dimgray":"696969","dodgerW":"1e90L","feldspar":"d19275","firebrick":"b22222","floralR":"Lfaf0","forestV":"228b22","fuchsia":"LML","gainsboro":"dcdcdc","ghostR":"f8f8L","gold":"Ld7M","goldenrod":"daa520","gray":"KKK","V":"M8M0","VX":"adL2f","honeydew":"f0Lf0","hotZ":"L69b4","indianS":"cd5c5c","indigo":"4bM82","ivory":"LLf0","khaki":"f0e68c","lavender":"e6e6fa","lavenderblush":"Lf0f5","lawnV":"7cfcM","lemonchiLon":"Lfacd","PW":"add8e6","Pcoral":"f0KK","Pcyan":"e0LL","PgoldenrodX":"fafad2","Pgrey":"d3d3d3","PV":"90K90","PZ":"Lb6c1","Psalmon":"La07a","PseaV":"20b2aa","PskyW":"87cefa","PslateW":"8470L","Pslategray":"778899","PstKlW":"b0c4de","PX":"LLe0","lime":"MLM","limeV":"32cd32","linen":"faf0e6","magenta":"LML","maroon":"8MM0","QUmarine":"66cdaa","QW":"MMcd","Qorchid":"ba55d3","Qpurple":"9370d8","QseaV":"3cb371","QslateW":"7b68K","QspringV":"Mfa9a","Qturquoise":"48d1cc","QvioletS":"c71585","midnightW":"191970","mintcream":"f5Lfa","mistyrose":"Le4e1","moccasin":"Le4b5","navajoR":"Ldead","navy":"MMK","oldlace":"fdf5e6","olive":"K8M0","olivedrab":"6b8e23","Y":"La5M","YS":"L45M","orchid":"da70d6","palegoldenrod":"Ke8aa","paleV":"98fb98","paleturquoise":"afKK","palevioletS":"d87093","papayawhip":"Lefd5","peachpuL":"Ldab9","peru":"cd853f","Z":"Lc0cb","plum":"dda0dd","powderW":"b0e0e6","purple":"8M0K","S":"LMM","rosybrown":"bc8f8f","royalW":"4169e1","saddlebrown":"8b4513","salmon":"faK72","sandybrown":"f4a460","seaV":"2e8b57","seashell":"Lf5K","sienna":"a0522d","silver":"c0c0c0","skyW":"87cKb","slateW":"6a5acd","slategray":"70K90","snow":"Lfafa","springV":"ML7f","stKlW":"4682b4","tan":"d2b48c","teal":"MKK","thistle":"d8bfd8","tomato":"L6347","turquoise":"40e0d0","violet":"K82K","violetS":"d02090","wheat":"f5deb3","R":"LLL","Rsmoke":"f5f5f5","X":"LLM","XV":"9acd32"}';
+                    for (var i = 0; i < placeholder.length; i++) strEnColor = strEnColor.replace(new RegExp(placeholder[i], "g"), replace[i]);
+                    return strEnColor;
+                };
                 var _Hex2RGB = function (color) {
                     var i = 0, arrColor = [];
                     if (color.length === 4) {
@@ -107,7 +113,7 @@
                     }
                     return color;
                 } else {
-                    var hexColor = JSON.parse(_EN_COLOR)[color];
+                    var hexColor = JSON.parse(_EN_COLOR())[color];
                     if (!hexColor) {
                         console.error("抱歉！无该英文颜色");
                         return color;
@@ -151,10 +157,10 @@
                     new RegExp("MSIE (\\d+\\.\\d+);").test(userAgent);
                     var ieV = parseInt(RegExp["$1"]);
                     if (ieV === 7) return 7;
-                    else if (ieV === 8) return 8;
-                    else if (ieV === 9) return 9;
-                    else if (ieV === 10) return 10;
-                    else return 1;
+                    if (ieV === 8) return 8;
+                    if (ieV === 9) return 9;
+                    if (ieV === 10) return 10;
+                    return 1;
                 }
                 if (isEdge) return "edge";
                 if (isIE11) return 11;
@@ -197,8 +203,15 @@
                 this.fullTemp = {full: false};
                 this.openEvents = [];
                 this.closeEvents = [];
+                this.$icon = $("<div class='lzy_nav_icon'>!</div>");
+                this.$title = $("<div class='lzy_nav_title'>消息</div>");
+                this.$close = $("<svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg>");
+                this.$full = $("<div class='lzy_nav_full'></div>");
+                this.$nav = $("<div class='lzy_popup_nav'></div>").append(this.$icon).append(this.$title).append(this.$close).append(this.$full);
+                this.$cont = $("<div class='lzy_popup_cont'></div>");
+                this.$footer = $("<div class='lzy_popup_footer'></div>");
+                this.$popupObj = $("<div class='lzy_custom_popup'></div>").append(this.$nav).append(this.$cont).append(this.$footer);
                 this.$bgObj = $("<div class='lzy_custom_bg'></div>");
-                this.$popupObj = $("<div class='lzy_custom_popup'><div class='lzy_popup_nav'><div class='lzy_nav_icon'>!</div><div class='lzy_nav_title'>消息</div><svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg><div class='lzy_nav_full'></div></div><div class='lzy_popup_cont'></div><div class='lzy_popup_footer'></div></div>");
                 this.zoominBtn = "<svg><rect x='4' y='4' width='10' height='10' style='stroke: %color' /></svg>";
                 this.zoomoutBtn = "<svg><rect x='4' y='6' width='8' height='8' style='stroke: %color'/><line x1='5' y1='4' x2='14' y2='4' style='stroke: %color'/><line x1='14' y1='3' x2='14' y2='13' style='stroke: %color'/></svg>";
                 this.zoomBtnColor = "";
@@ -279,30 +292,31 @@
                         'height': this.cfg.height,
                         'border': this.cfg.border,
                         'border-radius': this.cfg.borderRadius
-                    }).find(".lzy_popup_footer").css({
+                    });
+                    this.$footer.css({
                         'text-align': cfg.buttonAlign
                     });
                     this.$popupObj.css({'border-color': this.cfg.themeColor});
-                    this.$popupObj.find(".lzy_popup_nav").css({'border-bottom-color': this.cfg.themeColor});
+                    this.$nav.css({'border-bottom-color': this.cfg.themeColor});
 
                     if (this.cfg.themeStyle === "default") {
-                        this.$popupObj.find(".lzy_popup_nav").css({'background-color': this.cfg.themeColor});
-                        this.$popupObj.find(".lzy_nav_icon").css({'border-color': '#fff', 'color': '#fff'});
-                        this.$popupObj.find(".lzy_nav_title").css({'color': '#fff'});
-                        this.$popupObj.find(".lzy_nav_close").find("line").css({'stroke': '#fff'});
+                        this.$nav.css({'background-color': this.cfg.themeColor});
+                        this.$icon.css({'border-color': '#fff', 'color': '#fff'});
+                        this.$title.css({'color': '#fff'});
+                        this.$close.find("line").css({'stroke': '#fff'});
                         this.zoomBtnColor = '#fff';
                     }
                     if (this.cfg.themeStyle === "dimnav") {
-                        this.$popupObj.find(".lzy_popup_nav").css({'background-color': dimColor(this.cfg.themeColor, .15)});
-                        this.$popupObj.find(".lzy_nav_icon").css({
+                        this.$nav.css({'background-color': dimColor(this.cfg.themeColor, .15)});
+                        this.$icon.css({
                             'border-color': this.cfg.themeColor,
                             'color': this.cfg.themeColor
                         });
-                        this.$popupObj.find(".lzy_nav_title").css({'color': '#000'});
-                        this.$popupObj.find(".lzy_nav_close").find("line").css({'stroke': this.cfg.themeColor});
+                        this.$title.css({'color': '#000'});
+                        this.$close.find("line").css({'stroke': this.cfg.themeColor});
                         this.zoomBtnColor = this.cfg.themeColor;
                     }
-                    this.$popupObj.find(".lzy_nav_close").off("mouseenter mouseleave click").hover(function () {
+                    this.$close.off("mouseenter mouseleave click").hover(function () {
                         $(this).find("rect").css("fill", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
                     }, function () {
                         $(this).find("rect").css("fill", "rgba(0,0,0,0)");
@@ -314,11 +328,16 @@
                     //背景是否显示
                     if (this.cfg.isShowBg) {
                         this.$bgObj.appendTo("body").append(this.$popupObj);
-                        if (this.cfg.isClickBgClose) {
-                            this.$bgObj.off("click").on("click", function () {
+                        this.$bgObj.off("click").on("click", function () {
+                            if (that.cfg.isClickBgClose) {
                                 that.closePopup();
-                            });
-                        }
+                            } else {
+                                that.$popupObj.addClass("lzy_popup_show_6").removeClass("lzy_popup_show_" + that.cfg.animation);
+                                setTimeout(function () {
+                                    that.$popupObj.removeClass("lzy_popup_show_6");
+                                }, 300);
+                            }
+                        });
                     } else this.$popupObj.appendTo("body");
 
                     //设置边框阴影
@@ -329,22 +348,22 @@
                         if (this.cfg.icon) {
                             //更换图标
                             if (this.cfg.icon && this.cfg.icon.indexOf("/") >= 0) {
-                                this.$popupObj.find(".lzy_nav_icon").css({
+                                this.$icon.css({
                                     'background-image': 'url(' + this.cfg.icon + ')',
                                     'border-radius': 0,
                                     'border': 'none'
                                 }).html("");
                             } else {
-                                this.$popupObj.find(".lzy_nav_icon").html(this.cfg.icon);
+                                this.$icon.html(this.cfg.icon);
                             }
                         }
                     } else {
-                        this.$popupObj.find(".lzy_nav_icon").hide();
+                        this.$icon.hide();
                     }
                     //是否允许拖动
                     if (this.cfg.allowedMove) {
                         //拖动事件
-                        that.$popupObj.find(".lzy_popup_nav").addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
+                        that.$nav.addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
                             var isMove = true;
                             var div_x = e.pageX - that.$popupObj.offset().left;
                             var div_y = e.pageY - that.$popupObj.offset().top;
@@ -357,7 +376,7 @@
                     }
                     //是否允许放大全屏
                     if (this.cfg.allowedFullscreen) {
-                        this.$popupObj.find(".lzy_nav_full").show()
+                        this.$full.show()
                             .append($(this.zoominBtn.replace(/%color/g, this.zoomBtnColor)))
                             .off("mouseenter mouseleave click")
                             .hover(function () {
@@ -402,14 +421,14 @@
                         });
                     }
                     //配置标题
-                    if (this.cfg.title) this.$popupObj.find(".lzy_nav_title").html(this.cfg.title);
+                    if (this.cfg.title) this.$title.html(this.cfg.title);
                     //配置内容
                     if (this.cfg.content) {
-                        if ($(this.cfg.content).get(0)) this.$popupObj.find(".lzy_popup_cont").append($(this.cfg.content));
-                        else this.$popupObj.find(".lzy_popup_cont").html("<span>" + this.cfg.content + "</span>");
+                        if ($(this.cfg.content).get(0)) this.$cont.append($(this.cfg.content));
+                        else this.$cont.html("<span>" + this.cfg.content + "</span>");
                     }
 
-                    if (isIE()) this.$popupObj.find(".lzy_nav_title").css('line-height', "33px");//适配IE浏览器样式
+                    if (isIE()) this.$title.css('line-height', "33px");//适配IE浏览器样式
                     return this;
                 },
                 showPopup: function (content, title) {
@@ -503,28 +522,28 @@
                     }
 
                     //配置各项底部按键等的样式(因为添加按键是不定性的，后滞的，无法预先在初始化时配置)
-                    if (this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").length === 0) {
-                        this.$popupObj.find(".lzy_popup_cont").css('height', 'calc(100% - 30px)').next().css('height', '0');
+                    if (this.$footer.find(".lzy_footer_btn").length === 0) {
+                        this.$cont.css('height', 'calc(100% - 30px)').next().css('height', '0');
                     }
-                    this.$popupObj.find(".lzy_popup_footer").css("text-align", this.cfg.buttonAlign);
-                    this.$popupObj.find(".lzy_footer_btn").css({
+                    this.$footer.css("text-align", this.cfg.buttonAlign);
+                    this.$footer.find(".lzy_footer_btn").css({
                         'border-color': this.cfg.themeColor,
                         'background-color': this.cfg.themeColor
                     });
-                    if (isFire()) this.$popupObj.find(".lzy_footer_btn").css({'height': '23px'});
-                    if (isIE()) this.$popupObj.find(".lzy_footer_btn").css({'line-height': '24px'});
+                    if (isFire()) this.$footer.find(".lzy_footer_btn").css({'height': '23px'});
+                    if (isIE()) this.$footer.find(".lzy_footer_btn").css({'line-height': '24px'});
 
-                    this.$popupObj.find(".lzy_footer_btn_close").css({
+                    this.$footer.find(".lzy_footer_btn_close").css({
                         'color': this.cfg.themeColor,
                         'border-color': this.cfg.themeColor,
                         'background-color': 'white'
                     });
                     //配置标题
-                    if (title) this.$popupObj.find(".lzy_nav_title").html(title);
+                    if (title) this.$title.html(title);
                     //配置内容
                     if (content && content !== "") {
-                        if ($(content).get(0)) this.$popupObj.find(".lzy_popup_cont").html($(content));//如果时 dom 节点就直接添加
-                        else this.$popupObj.find(".lzy_popup_cont").html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
+                        if ($(content).get(0)) this.$cont.html($(content));//如果时 dom 节点就直接添加
+                        else this.$cont.html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
                     }
                     for (i = 0; i < 10; i++) this.$popupObj.removeClass("lzy_popup_close_" + i);
                     if (this.cfg.isShowBg) this.$bgObj.show().css("z-index", getMaxZIndex());
@@ -551,7 +570,7 @@
                 },
                 addButton: function (btnName, callback) {
                     var that = this, tempColor;
-                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.$popupObj.find(".lzy_popup_footer"))
+                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.$footer)
                         .on("click", function () {
                             if (callback) callback.call(that);
                             if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) that.closePopup();//给含有“关闭”意思的按键添加关闭事件
@@ -564,7 +583,7 @@
                             $(this).css('background-color', tempColor);
                         });
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
-                    var size = 0, btns = that.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                    var size = 0, btns = that.$footer.find(".lzy_footer_btn");
                     for (var i = 0; i < btns.length; i++) {
                         var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
                         size += tempSize + 22 + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
@@ -575,12 +594,12 @@
                 removeButton: function (nameOrIndex) {
                     if (isNaN(nameOrIndex)) {
                         //非数字即按名称判断按键
-                        var btns = this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn");
+                        var btns = this.$footer.find(".lzy_footer_btn");
                         for (var i = 0; i < btns.length; i++) {
                             if (btns.eq(i).text() === nameOrIndex) btns.eq(i).remove();
                         }
                     } else {
-                        this.$popupObj.find(".lzy_popup_footer").find(".lzy_footer_btn").eq(nameOrIndex).remove();
+                        this.$footer.find(".lzy_footer_btn").eq(nameOrIndex).remove();
                     }
                 },
                 getStatus: function () {
