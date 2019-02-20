@@ -7,18 +7,106 @@
     <script src="../custom-plugins/custom-utils/jquery.custom.utils.js"></script>
     <script>
         $(function () {
-            $("#tool").on("click", function () {
-                var color = $("#color").val();
-                console.log("RGB:" + ColorTool.toRGB(color));
-                console.log("HEX:" + ColorTool.toHEX(color));
+            var sortFun = function (key, order) {
+                try {
+                    var val = $("#temp").val();
+                    var jsonVal = JSON.parse(val);
+                    jsonVal.sortJson(key, order);
+                    var txt = "[\n";
+                    for (var i = 0; i < jsonVal.length; i++) {
+                        txt += "{ key1:'" + jsonVal[i].key1 + "', key2:'" + jsonVal[i].key2 + "', key3:'" + jsonVal[i].key3 + "'}\n"
+                    }
+                    txt += "]";
+                    $("#show").val(txt);
 
+                } catch (e) {
+                    $("#show").val("json数值的格式错误！");
+                }
+            };
+
+
+            $("#tool1").on("click", function () {
+                sortFun("key1");
             });
+
+            $("#tool2").on("click", function () {
+                sortFun("key2");
+            });
+
+            $("#tool3").on("click", function () {
+                sortFun("key3");
+            });
+
+            $("#tool4").on("click", function () {
+                sortFun("key1", "desc");
+            });
+
+            $("#tool5").on("click", function () {
+                sortFun("key2", "desc");
+            });
+
+            $("#tool6").on("click", function () {
+                sortFun("key3", "desc");
+            });
+
+            console.log(2425423.2345234.toThd());
+            console.log("93434.23234".toThd());
+            console.log(toThd(234234.2342));
+
+            $("#tool").on("click", function () {
+                $("#num").animateNum($("#val").val(), false, 1000);
+            });
+
+
+            $("#copy").on("click", function () {
+                $(this).copyStyle($("#reference"));
+            });
+
+//            for (var i = -1; i > -100; i--) {
+//                console.log($.TimeTool.getIntTime(i, "Month"));
+//            }
+
+            var range = $.ColorTool.createRange(["blue", "green", "yellow", "red"], 5000, 100, 120);
+            for (var i = 100; i < 5000; i += 50) {
+                $("body").append($("<div style='background-color: " + range.getRGB(i) + ";width: 100%;height: 5px;'></div>"))
+            }
         });
 
     </script>
 </head>
 <body>
-<input id="color">
-<input type="button" value="获取" id="tool">
+
+<textarea id="temp" style="width: 350px ;height: 200px;" title="">
+    [
+    { "key1": 1, "key2": "e", "key3": "我" },
+    { "key1": 3, "key2": "b", "key3": "你" },
+    { "key1": 5, "key2": "d", "key3": "他" },
+    { "key1": 4, "key2": "c", "key3": "好" },
+    { "key1": 2, "key2": "a", "key3": "福" }
+    ]
+</textarea><br/>
+(正序)
+<input type="button" value="key1排序" id="tool1">
+<input type="button" value="key2排序" id="tool2">
+<input type="button" value="key3排序" id="tool3"><br/>
+(逆序)
+<input type="button" value="key1排序" id="tool4">
+<input type="button" value="key2排序" id="tool5">
+<input type="button" value="key3排序" id="tool6"><br/>
+<textarea id="show" style="width: 350px ;height: 200px;" title=""></textarea>
+
+<br/>
+<input id="val" value="12632.754">
+
+<input type="button" value="动态数字" id="tool"><br/>
+<span id="num"></span>
+
+
+<br/>
+<input type="button" value="参考对象" id="reference"
+       style="width: 200px;margin-left: 25px;background-color: blue;border-radius: 5px;"><br/>
+<input type="button" value="复制" id="copy"><br/>
+
+
 </body>
 </html>
