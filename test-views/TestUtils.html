@@ -62,11 +62,11 @@
                 $(this).copyStyle($("#reference"));
             });
 
-//            for (var i = -1; i > -100; i--) {
-//                console.log($.TimeTool.getIntTime(i, "Month"));
-//            }
+            for (var i = -1; i > -100; i--) {
+                console.log(TimeTool.getIntTime(i, "Month"));
+            }
 
-            var range = $.ColorTool.createRange(["blue", "green", "yellow", "red"], 5000, 100, 120);
+            var range = ColorTool.createRange(["blue", "green", "yellow", "red"], 5000, 100, 120);
             for (var i = 100; i < 5000; i += 50) {
                 $("body").append($("<div style='background-color: " + range.getRGB(i) + ";width: 100%;height: 5px;'></div>"))
             }
