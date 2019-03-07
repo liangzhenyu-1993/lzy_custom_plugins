@@ -331,13 +331,13 @@
         this.getFormatMonth = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(num, "month", time), str1, str2);
         };
-        this.getFormatDay = function (num, time) {
+        this.getFormatDay = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(num, "day", time), str1, str2);
         };
-        this.getFormatHour = function (num, time) {
+        this.getFormatHour = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(num, "hour", time), str1, str2);
         };
-        this.getFormatMin = function (num, time) {
+        this.getFormatMin = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(num, "min", time), str1, str2);
         };
         this.getIntTimeBefore = function (num, type, time) {
@@ -361,13 +361,13 @@
         this.getFormatMonthBefore = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(-(num || 0), "month", time), str1, str2);
         };
-        this.getFormatDayBefore = function (num, time) {
+        this.getFormatDayBefore = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(-(num || 0), "day", time), str1, str2);
         };
-        this.getFormatHourBefore = function (num, time) {
+        this.getFormatHourBefore = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(-(num || 0), "hour", time), str1, str2);
         };
-        this.getFormatMinBefore = function (num, time) {
+        this.getFormatMinBefore = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime(-(num || 0), "min", time), str1, str2);
         };
         this.getIntTimeAfter = function (num, type, time) {
@@ -391,13 +391,13 @@
         this.getFormatMonthAfter = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime((num || 0), "month", time), str1, str2);
         };
-        this.getFormatDayAfter = function (num, time) {
+        this.getFormatDayAfter = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime((num || 0), "day", time), str1, str2);
         };
-        this.getFormatHourAfter = function (num, time) {
+        this.getFormatHourAfter = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime((num || 0), "hour", time), str1, str2);
         };
-        this.getFormatMinAfter = function (num, time) {
+        this.getFormatMinAfter = function (num, time, str1, str2) {
             return this.formatTime(this.getIntTime((num || 0), "min", time), str1, str2);
         };
         /**
@@ -434,24 +434,35 @@
         /**
          * 计算两个时间之间的时间长度
          * @param startTime 开始时间
-         * @param endTime 结束时间，注：开始时间和结束时间不要求前小后大，只要是两个时间就行，开始时间可以比结束时间大
+         * @param endTime 结束时间，注：开始时间大于结束时间则返回负数
          * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
          * @returns {*}
          */
         this.calculateTime = function (startTime, endTime, type) {
             var sTime = __dealTime2Obj(startTime);
             var eTime = __dealTime2Obj(endTime);
-            var millisecond = Math.abs(eTime.getTime() - sTime.getTime());
+            var millisecond = eTime.getTime() - sTime.getTime();
             if (type) type = type.toLowerCase();
             if (type === "month" || type === 1) {
-                var timeArr = __getDateArr(new Date(millisecond));
-                return (timeArr[0] - 1970) * 12 + parseInt(timeArr[1]) - 1;
+                var timeArr = __getDateArr(new Date(Math.abs(millisecond)));
+                var oftMonth = (timeArr[0] - 1970) * 12 + parseInt(timeArr[1]) - 1;
+                return millisecond >= 0 ? oftMonth : -oftMonth;
             }
             if (!type || type === "day" || type === 2) return parseInt(millisecond / 24 / 60 / 60 / 1000);
             if (type === "hour" || type === 3) return parseInt(millisecond / 60 / 60 / 1000);
             if (type === "min" || type === 4) return parseInt(millisecond / 60 / 1000);
             return null;
         };
+        /**
+         * 计算两个时间之间的时间长度(绝对值)
+         * @param time1 时间1
+         * @param time2 时间2，注：时间1和时间2不要求前小后大，只要是两个时间就行，时间1可以比时间2大
+         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
+         * @returns {*}
+         */
+        this.calculateTimeRange = function (time1, time2, type) {
+            return Math.abs(this.calculateTime(time1, time2, type));
+        }
     };
 
     // 颜色操作工具

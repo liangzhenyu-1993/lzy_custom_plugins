@@ -7,6 +7,9 @@
     <script src="../custom-plugins/custom-utils/jquery.custom.utils.js"></script>
     <script>
         $(function () {
+            console.log(TimeTool.getIntTime(1, "hour"));
+            console.log(TimeTool.getFormatTime(1, "hour"));
+
             var sortFun = function (key, order) {
                 try {
                     var val = $("#temp").val();
