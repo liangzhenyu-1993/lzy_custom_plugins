@@ -14,30 +14,30 @@
      * @param grain 粒度，在规定时间内数字变化次数（可选），默认 100
      */
     $.fn.animateNum = function (num, isThd, delay, grain) {
-        //后期前缀
-        this.getPref = function (str) {
-            var pref = "";
-            for (var i = 0; i < str.length; i++) if (!isNaN(str.charAt(i))) return pref; else pref += str.charAt(i);
-        };
-        //获取后缀
-        this.getSuf = function (str) {
-            var suf = "";
-            for (var i = str.length - 1; i >= 0; i--) if (!isNaN(str.charAt(i))) return suf; else suf = str.charAt(i) + suf;
-        };
-        //千分位格式化
-        this.toThd = function (num, isThd) {
-            if (!isThd) return num;
-            num = (num || 0).toString();
-            return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
-        };
+        var that = this,
+            //获取前缀
+            getPref = function (str) {
+                var pref = "";
+                for (var i = 0; i < str.length; i++) if (!isNaN(str.charAt(i))) return pref; else pref += str.charAt(i);
+            },
+            //获取后缀
+            getSuf = function (str) {
+                var suf = "";
+                for (var i = str.length - 1; i >= 0; i--) if (!isNaN(str.charAt(i))) return suf; else suf = str.charAt(i) + suf;
+            },
+            //千分位格式化
+            toThd = function (num, isThd) {
+                if (!isThd) return num;
+                num = (num || 0).toString();
+                return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
+            };
         //配置参数
         this.isThd = !!(isThd === null || isThd === undefined || isThd);
         this.delay = delay || 500;
         this.grain = grain || 100;
-        var that = this;
         if (!that || that.text() === num.toString()) return;//判断节点是否正常，判断数据是否更新
-        var pref = that.getPref(num.toString());//取出前缀
-        var suf = that.getSuf(num.toString());//取出后缀
+        var pref = getPref(num.toString());//取出前缀
+        var suf = getSuf(num.toString());//取出后缀
         var strNum = num.toString().replace(pref, "").replace(suf, "");//获取数值
         if (isNaN(strNum) || strNum === 0) {
             that.html(num);//把非数字和 0 直接返回
@@ -52,12 +52,12 @@
 
         var oft = (endNum - startNum) / that.grain, temp = 0;//oft 每次变化的值 ,temp用于作记录，避免程序出错不会结束循环
         var mTime = setInterval(function () {
-            that.html(pref + that.toThd(startNum.toFixed(deciLen), that.isThd) + suf);
+            that.html(pref + toThd(startNum.toFixed(deciLen), that.isThd) + suf);
             startNum += oft;//递增
             temp++;
             if (Math.abs(startNum) >= Math.abs(endNum) || temp > 5000) {
                 //但递增的值达到给定值（或循环次数过多5000时）便停止循环
-                that.html(pref + that.toThd(endNum, that.isThd) + suf);
+                that.html(pref + toThd(endNum, that.isThd) + suf);
                 clearInterval(mTime);
             }
         }, that.delay / that.grain);
@@ -119,7 +119,7 @@
     $.extend({
         /**
          * jquery方式实现form提交
-         * @param cfg 配置(url:连接,method:方式,target:打开类型,params:参数)
+         * @param cfg 配置:{url:"链接",method:"方式(get或post)",target:"打开类型(_self或_blank)",params:{"参1":"值1"}}
          */
         formTo: function (cfg) {
             var form = $("<form style='display:none;' accept-charset='UTF-8'></form>").attr({
@@ -422,14 +422,22 @@
         /**
          * 时间转整型（简单的把非数字移除）
          * @param time 时间（兼容字符串，整型和日期Date类型）
+         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
          * @returns {*}
          */
-        this.timeToInt = function (time) {
+        this.timeToInt = function (time, type) {
             if (!time) {
                 console.error("请输入时间！");
                 return null;
             }
-            return parseInt(time.toString().replace(/[^\d.]/g, ""));
+            time = time.toString().replace(/[^\d.]/g, "");
+            var end = 12;
+            if (type) type = (type || "all").toLowerCase();
+            if (type === "month" || type === 1) end = 6;
+            if (type === "day" || type === 2) end = 8;
+            if (type === "hour" || type === 3) end = 10;
+            if (type === "min" || type === 4) end = 12;
+            return parseInt(time.substr(0, end));
         };
         /**
          * 计算两个时间之间的时间长度

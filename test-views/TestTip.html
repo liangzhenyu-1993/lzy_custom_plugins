@@ -8,7 +8,7 @@
         body {
             margin: 0;
             width: 100%;
-            height: 100%;
+            height: 80%;
         }
 
         .inner {
@@ -39,10 +39,10 @@
 </body>
 </html>
 <script>
-    var myTip = $.CoustomTip();
+    var myTip = $.CustomTip();
 
     function showMyTip1() {
-        myTip.setCfg({showIcon: true}).showTip("Loading...");
+        myTip.setCfg({showIcon: true, position: "relative"}).showTip("Loading...");
     }
 
     function showMyTip2() {

@@ -10,17 +10,27 @@
             width: 120px;
             height: 30px;
             margin-left: 10px;
+            /*margin-top: 800px;*/
             padding: 5px;
-            box-shadow: 1px 1px 2px #18a15f;
+            box-shadow: 1px 1px 2px #1d82fe;
             /*border-radius: 5px;*/
-            border: 1px solid #18a15f;
-            color: #18a15f;
+            border: 1px solid #1d82fe;
+            color: #1d82fe;
             /*background-color: skyblue;*/
         }
 
         input {
             float: left;
             margin-left: 10px;
+        }
+
+        textarea {
+            position: fixed;
+            top: 50px;
+            left: 148px;
+            width: 500px;
+            height: 250px;
+            border: 1px solid #1d82fe;
         }
     </style>
     <!--<script src="../js/jquery-1.9.1.min.js"></script>-->
@@ -29,37 +39,48 @@
     <script src="../custom-plugins/custom-select/jquery-nicescroll.js"></script>
     <script type="text/javascript">
 
-        var diySelect, diySelect2;
+        var diySelect;
         $(function () {
             diySelect = $.initSelect("#city", true, function () {
-                //这个回调函数和onChange中的回调函数是同一个函数
-                console.log(this.getSelected());//this对象是diySelect
+                //api 的change事件
+                $("#text_cont").append("API方式：" + this.getSelected() + "\n");
+                $("#text_cont").append("API方式(name属性)：" + diySelect.getSelected('name') + "\n");
             });
-            diySelect.onChange(function () {
-                console.log(this.getSelected());
-            });
+            //原始方式的change事件
             $("#city").on("change", function () {
-                console.log($("#city").find("option:selected").val())
+                $("#text_cont").append("原始方式：" + $("#city").val() + "\n");
             });
         });
 
         function check() {
-            console.log($("#city").find("option:selected").text());//原始方式
-            console.log(diySelect.getSelected('name'));//api方式
+            $("#text_cont").append("API方式：" + diySelect.getSelected() + "\n");
+            $("#text_cont").append("API方式(name属性)：" + diySelect.getSelected('name') + "\n");
+            $("#text_cont").append("原始方式：" + $("#city").val() + "\n");
         }
 
-        function add() {
-//            diySelect.addRow("测试", {name: "测试", value: (Math.random() * 1000000).toFixed(0)});
+        function add1() {
+            $("#city").append("<option name=\"测试\" value=\"" + (Math.random() * 1000000).toFixed(0) + "\">测试</option>");
+        }
+
+        function add2() {
+            diySelect.addRow("测试", {name: "测试", value: (Math.random() * 1000000).toFixed(0)});
+        }
+
+        function add3() {
             diySelect.addOption("<option name=\"测试\" value=\"" + (Math.random() * 1000000).toFixed(0) + "\">测试</option>");
-//            $("#city").append("<option name=\"测试\" value=\"" + (Math.random() * 1000000).toFixed(0) + "\">测试</option>");
         }
 
-
-        function setVal() {
-//            $("#city").find("option[value=860762]").attr("selected", "selected");
-            diySelect.setSelected("value", "860762");
+        function setVal1() {
+            $("#city").find("option[value=860762]").attr("selected", true).siblings().attr("selected", false);
         }
 
+        function setVal2() {
+            diySelect.setSelected("86020");
+        }
+
+        function setVal3() {
+            diySelect.setSelected("name", "珠海");
+        }
 
     </script>
 </head>
@@ -90,8 +111,14 @@
 </select>
 
 <input type="button" value="测试选中值" onclick="check()">
-<input type="button" value="添加子项" onclick="add()">
-<input type="button" value="设置选中状态" onclick="setVal()">
+<input type="button" value="添加子项1" onclick="add1()">
+<input type="button" value="添加子项2" onclick="add2()">
+<input type="button" value="添加子项3" onclick="add3()">
+<input type="button" value="设置选中（河源）" onclick="setVal1()">
+<input type="button" value="设置选中（广州）" onclick="setVal2()">
+<input type="button" value="设置选中（珠海）" onclick="setVal3()">
 
+<br/>
+<textarea id="text_cont"></textarea>
 </body>
 </html>
