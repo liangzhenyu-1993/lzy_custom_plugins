@@ -41,25 +41,25 @@
         callback:回调函数
  参数说明：
     cfg:{
-        width:弹框的长,
-        height:弹框的高,
-        border:弹框边框设置,
-        borderRadius:边框的圆角大小,
-        themeColor:弹框的主题颜色,
-        themeStyle:主题风格，目前有两种："default"和"dimnav",默认值:"default",
-        animation:弹框弹出风格动画，1、弹出；2、收缩；3、旋转；4、下滑；5、上滑；6、抖动
-        isShowShadow:是否显示边框阴影,默认为true,
-        shadowSize:阴影的长度，如果 isShowShadow为false则该值无效，默认长度为12px，
-        isShowIcon:是否显示左上图标,默认:true,
-        icon:图标的图片（可以是路径；也可以是图片base64编码；也可以直接是字符，比如：'!','?'）,
-        allowedFullscreen:是否允许全屏，即是否添加全屏按键，默认值：false,
-        allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
         content:任意内容,可以是节点，可以是ID，可以是类。使用建议：弹框作为模态框时建议在这里配置选择器，作为提示框时这里不要配置，直接在showPopup方法配置；
             简而言之就是不常改变的内容（一般都是配置了样式的节点）放在这，经常改变的内容（一般都是一句疑问句）就放在showPopup方法中。
         title:弹框标题,
+        width:弹框的长,
+        height:弹框的高,
+        vertical:内容是否垂直居中，默认：true,
+        border:弹框边框设置,
+        borderRadius:边框的圆角大小,
+        themeColor:弹框的主题颜色,
+        animation:弹框弹出风格动画，1、弹出；2、收缩；3、旋转；4、下滑；5、上滑；6、抖动
+        showShadow:是否显示边框阴影,默认为true,
+        shadowSize:阴影的长度，如果 showShadow为false则该值无效，默认长度为12px，
+        showIcon:是否显示左上图标,默认:true,
+        icon:图标的图片（可以是路径；也可以是图片base64编码；也可以直接是字符，比如：'!','?'）,
+        allowedFullscreen:是否允许全屏，即是否添加全屏按键，默认值：false,
+        allowedKeyboard:是否允许键盘操作，目前暂时只要Esc按键点击退出事件，默认允许，true
         buttonAlign:按键对齐方式，left,center和right三种方式,
-        isShowBg:是否显示背景,默认：false,
-        isClickBgClose:是否点击背景关闭弹框，默认：true，
+        showBackground:是否显示背景,默认：false,
+        clickBgToClose:是否点击背景关闭弹框，默认：false，
         allowedMove:是否允许移动,默认：false,
         targetSelector:参照目标，用于弹框设置位置的相对节点，默认：'window'，相对于屏幕设置位置（这样能保证绝对定位），强调：这个'window'不是选择器，这个只是标识绝对定位的意思；
             其他比如：body，div，#myId，.myClass等节点或选择器，这些是用于设置相对位置（必须是真实的节点或选择器）
@@ -193,202 +193,205 @@
                 var maxZIndex = arr.length ? Math.max.apply(null, arr) : 0;
                 return maxZIndex > 999999 ? maxZIndex + 1 : 1000000;
             };
+            var isEmpty = function (val) {
+                //该方法的作用主要是避免传入参数为 0  时的判断却为false
+                return val === null || typeof(val) === "undefined";
+            };
+            /**
+             * 获取2倍边框宽
+             * @param obj 对象
+             * @returns {number} 宽长
+             */
+            var getDouBW = function (obj) {
+                return obj.css("border-left-width").replace("px", "") * 2;
+            };
+            /**
+             * 设置配置标记
+             * @param iof insideOrFollow 内嵌或跟随
+             * @param pos 位置：1，2，4，8，16，代表 中，上，下，左，右
+             * @returns {number} 标识码
+             */
+            var setPosTag = function (iof, pos) {
+                if (iof && iof === 'follow' && !pos) return 20;
+                if (!pos) return 1;
+                if (/[0-9]/.test(pos)) {
+                    pos = pos.toString().replace(/px/g, "").replace(/\s+/g, "");
+                    if ("1,2,4,8,16,18,10,12,20".indexOf(pos) >= 0) return pos;
+                    return pos + ",";
+                }
+                pos = pos.toLowerCase();
+                if (pos.indexOf("center") >= 0) return 1;
+                var tag = 0;
+                if (pos.indexOf("top") >= 0) tag += 2;
+                if (pos.indexOf("bottom") >= 0) tag += 4;
+                if (pos.indexOf("left") >= 0) tag += 8;
+                if (pos.indexOf("right") >= 0) tag += 16;
+                return tag;
+            };
             /**
              * 弹框的主体入口方法
              * @param cfg 配置
              */
             var lzyPopup = function (cfg) {
-                this.version = "v1.3.5";
-                this.cfg = null;
-                this.fullTemp = {full: false};
-                this.openEvents = [];
-                this.closeEvents = [];
+                var that = this;
+                this.version = "v2.0";
                 this.$icon = $("<div class='lzy_nav_icon'>!</div>");
                 this.$title = $("<div class='lzy_nav_title'>消息</div>");
                 this.$close = $("<svg class='lzy_nav_close'><rect width='18' height='18'/><line x1='4' y1='4' x2='14' y2='14'/><line x1='4' y1='14' x2='14' y2='4'/></svg>");
                 this.$full = $("<div class='lzy_nav_full'></div>");
                 this.$nav = $("<div class='lzy_popup_nav'></div>").append(this.$icon).append(this.$title).append(this.$close).append(this.$full);
-                this.$cont = $("<div class='lzy_popup_cont'></div>");
+                this.$cont = $("<div class='lzy_popup_cont lzy_popup_v_cont'></div>");
                 this.$footer = $("<div class='lzy_popup_footer'></div>");
                 this.$popupObj = $("<div class='lzy_custom_popup'></div>").append(this.$nav).append(this.$cont).append(this.$footer);
                 this.$bgObj = $("<div class='lzy_custom_bg'></div>");
                 this.zoominBtn = "<svg><rect x='4' y='4' width='10' height='10' style='stroke: %color' /></svg>";
                 this.zoomoutBtn = "<svg><rect x='4' y='6' width='8' height='8' style='stroke: %color'/><line x1='5' y1='4' x2='14' y2='4' style='stroke: %color'/><line x1='14' y1='3' x2='14' y2='13' style='stroke: %color'/></svg>";
-                this.zoomBtnColor = "";
+                this.cfg = null;
+                this.global = {fullTag: {full: false}, rect: null, once: 1};
+                this.events = {openEvents: [], closeEvents: []};
                 this.setStyle(cfg, true);
+
+                this.timeout = null;
+                $(window).resize(function () {
+                    clearTimeout(that.timeout);
+                    that.timeout = setTimeout(function () {
+                        that.setStyle(null, false);
+                        if (that.$popupObj.css("display") !== "none") {
+                            that.showPopup();
+                        }
+                    }, 300);
+                });
             };
             lzyPopup.prototype = {
                 setStyle: function (cfg, status) {
+                    var that = this;
                     cfg = cfg || {};
-                    var isEmpty = function (val) {
-                        //该方法的作用主要是避免传入参数为 0  时的判断却为false
-                        return val === null || typeof(val) === "undefined";
-                    };
                     if (status) {
                         //全新插入参数，未配置的使用默认参
                         this.cfg = {
+                            content: cfg.content || null,
+                            title: cfg.title || null,
                             width: cfg.width || 350,
                             height: cfg.height || 200,
                             border: cfg.border || '1px solid black',
-                            borderRadius: isEmpty(cfg.borderRadius) ? 5 : cfg.borderRadius,
+                            borderRadius: isEmpty(cfg.borderRadius) ? 5 : parseFloat(cfg.borderRadius),
                             themeColor: cfg.themeColor || "#358aff",
-                            themeStyle: (cfg.themeStyle || 'default').toLowerCase(),
                             animation: cfg.animation || 1,
-                            isShowIcon: isEmpty(cfg.isShowIcon) ? true : cfg.isShowIcon,
+                            showIcon: isEmpty(cfg.showIcon) ? true : cfg.showIcon,
+                            vertical: isEmpty(cfg.vertical) ? true : cfg.vertical,
                             icon: cfg.icon || null,
                             allowedFullscreen: cfg.allowedFullscreen,
                             allowedKeyboard: isEmpty(cfg.allowedKeyboard) ? true : cfg.allowedKeyboard,
-                            content: cfg.content || null,
-                            title: cfg.title || null,
                             buttonAlign: cfg.buttonAlign || 'right',
-                            isShowShadow: isEmpty(cfg.isShowShadow) ? true : cfg.isShowShadow,
+                            showShadow: isEmpty(cfg.showShadow) ? true : cfg.showShadow,
                             shadowSize: isEmpty(cfg.shadowSize) ? 12 : cfg.shadowSize,
-                            isShowBg: cfg.isShowBg,
-                            isClickBgClose: isEmpty(cfg.isClickBgClose) ? true : cfg.isClickBgClose,
+                            showBackground: cfg.showBackground,
+                            clickBgToClose: cfg.clickBgToClose,
                             allowedMove: cfg.allowedMove,
                             targetSelector: cfg.targetSelector || 'window',
                             insideOrFollow: (cfg.insideOrFollow || 'inside').toLowerCase(),
-                            relativePosition: (cfg.relativePosition || 'center').toLowerCase(),
+                            relativePosition: setPosTag(this.insideOrFollow, cfg.relativePosition),
                             relativeOffset: isEmpty(cfg.relativeOffset) ? 10 : cfg.relativeOffset
                         };
-                        if (!cfg.relativePosition && this.cfg.insideOrFollow === 'follow') this.cfg.relativePosition = "right bottom";
                     } else {
                         //追加插入参数，未配置的使用默认参
                         this.cfg = {
-                            width: cfg.width || this.cfg.width,
-                            height: cfg.height || this.cfg.height,
-                            border: cfg.border || this.cfg.border,
-                            borderRadius: !isEmpty(cfg.borderRadius) ? cfg.borderRadius : this.cfg.borderRadius,
-                            themeColor: cfg.themeColor || this.cfg.themeColor,
-                            themeStyle: (cfg.themeStyle || this.cfg.themeStyle).toLowerCase(),
-                            animation: cfg.animation || this.cfg.animation,
-                            isShowIcon: !isEmpty(cfg.isShowIcon) ? cfg.isShowIcon : this.cfg.isShowIcon,
-                            icon: cfg.icon || this.cfg.icon,
-                            allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : this.cfg.allowedFullscreen,
-                            allowedKeyboard: !isEmpty(cfg.allowedKeyboard) ? cfg.allowedKeyboard : this.cfg.allowedKeyboard,
-                            content: cfg.content || this.cfg.content,
-                            title: cfg.title || this.cfg.title,
-                            buttonAlign: cfg.buttonAlign || this.cfg.buttonAlign,
-                            isShowShadow: !isEmpty(cfg.isShowShadow) ? cfg.isShowShadow : this.cfg.isShowShadow,
-                            shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : this.cfg.shadowSize,
-                            isShowBg: !isEmpty(cfg.isShowBg) ? cfg.isShowBg : this.cfg.isShowBg,
-                            isClickBgClose: !isEmpty(cfg.isClickBgClose) ? cfg.isClickBgClose : this.cfg.isClickBgClose,
-                            allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : this.cfg.allowedMove,
-                            targetSelector: cfg.targetSelector || this.cfg.targetSelector,
-                            insideOrFollow: (cfg.insideOrFollow || this.cfg.insideOrFollow).toLowerCase(),
-                            relativePosition: (cfg.relativePosition || this.cfg.relativePosition).toLowerCase(),
-                            relativeOffset: !isEmpty(cfg.relativeOffset) ? cfg.relativeOffset : this.cfg.relativeOffset
+                            content: cfg.content || that.cfg.content,
+                            title: cfg.title || that.cfg.title,
+                            width: cfg.width || that.cfg.width,
+                            height: cfg.height || that.cfg.height,
+                            border: cfg.border || that.cfg.border,
+                            borderRadius: !isEmpty(cfg.borderRadius) ? parseFloat(cfg.borderRadius) : that.cfg.borderRadius,
+                            themeColor: cfg.themeColor || that.cfg.themeColor,
+                            animation: cfg.animation || that.cfg.animation,
+                            showIcon: !isEmpty(cfg.showIcon) ? cfg.showIcon : that.cfg.showIcon,
+                            vertical: !isEmpty(cfg.vertical) ? cfg.vertical : that.cfg.vertical,
+                            icon: cfg.icon || that.cfg.icon,
+                            allowedFullscreen: !isEmpty(cfg.allowedFullscreen) ? cfg.allowedFullscreen : that.cfg.allowedFullscreen,
+                            allowedKeyboard: !isEmpty(cfg.allowedKeyboard) ? cfg.allowedKeyboard : that.cfg.allowedKeyboard,
+                            buttonAlign: cfg.buttonAlign || that.cfg.buttonAlign,
+                            showShadow: !isEmpty(cfg.showShadow) ? cfg.showShadow : that.cfg.showShadow,
+                            shadowSize: !isEmpty(cfg.shadowSize) ? cfg.shadowSize : that.cfg.shadowSize,
+                            showBackground: !isEmpty(cfg.showBackground) ? cfg.showBackground : that.cfg.showBackground,
+                            clickBgToClose: !isEmpty(cfg.clickBgToClose) ? cfg.clickBgToClose : that.cfg.clickBgToClose,
+                            allowedMove: !isEmpty(cfg.allowedMove) ? cfg.allowedMove : that.cfg.allowedMove,
+                            targetSelector: cfg.targetSelector || that.cfg.targetSelector,
+                            insideOrFollow: (cfg.insideOrFollow || that.cfg.insideOrFollow).toLowerCase(),
+                            relativePosition: cfg.relativePosition ? setPosTag(this.insideOrFollow, cfg.relativePosition) : that.cfg.relativePosition,
+                            relativeOffset: !isEmpty(cfg.relativeOffset) ? cfg.relativeOffset : that.cfg.relativeOffset
                         };
                     }
+
                     //配置样式
-                    var that = this;
-                    this.$popupObj.off("click").on("click", function (e) {
-                        e.stopPropagation();
-                        if (that.cfg.isShowBg) that.$bgObj.css("z-index", getMaxZIndex());
-                        else that.$popupObj.css("z-index", getMaxZIndex())
-                    });
                     this.$popupObj.css({
                         'width': this.cfg.width,
                         'height': this.cfg.height,
                         'border': this.cfg.border,
-                        'border-radius': this.cfg.borderRadius
+                        'border-radius': this.cfg.borderRadius,
+                        'border-color': this.cfg.themeColor,
+                        'box-shadow': "0 0 " + (this.cfg.showShadow ? this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor : "0")//设置边框阴影
                     });
-                    this.$footer.css({
-                        'text-align': cfg.buttonAlign
+                    this.$nav.css({
+                        'border-bottom-color': this.cfg.themeColor,
+                        'background-color': this.cfg.themeColor
+                    }).off("click").on("click", function (e) {
+                        e.stopPropagation();
+                        if (that.cfg.showBackground) that.$bgObj.css("z-index", getMaxZIndex());
+                        else that.$popupObj.css("z-index", getMaxZIndex())
                     });
-                    this.$popupObj.css({'border-color': this.cfg.themeColor});
-                    this.$nav.css({'border-bottom-color': this.cfg.themeColor});
-
-                    if (this.cfg.themeStyle === "default") {
-                        this.$nav.css({'background-color': this.cfg.themeColor});
-                        this.$icon.css({'border-color': '#fff', 'color': '#fff'});
-                        this.$title.css({'color': '#fff'});
-                        this.$close.find("line").css({'stroke': '#fff'});
-                        this.zoomBtnColor = '#fff';
-                    }
-                    if (this.cfg.themeStyle === "dimnav") {
-                        this.$nav.css({'background-color': dimColor(this.cfg.themeColor, .15)});
-                        this.$icon.css({
-                            'border-color': this.cfg.themeColor,
-                            'color': this.cfg.themeColor
+                    //是否允许拖动
+                    if (this.cfg.allowedMove) {
+                        //拖动事件
+                        that.$nav.addClass("lzy_popup_nav_move").off("mousedown").on("mousedown", function (e) {
+                            var isMove = true;
+                            var div_x = e.pageX - that.$popupObj.offset().left;
+                            var div_y = e.pageY - that.$popupObj.offset().top;
+                            $(document).on("mousemove", function (e) {
+                                if (isMove) that.$popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
+                            }).on("mouseup", function () {
+                                isMove = false;
+                            });
                         });
-                        this.$title.css({'color': '#000'});
-                        this.$close.find("line").css({'stroke': this.cfg.themeColor});
-                        this.zoomBtnColor = this.cfg.themeColor;
+                    } else {
+                        that.$nav.removeClass("lzy_popup_nav_move").off("mousedown");
                     }
-                    this.$close.off("mouseenter mouseleave click").hover(function () {
-                        $(this).find("rect").css("fill", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
-                    }, function () {
-                        $(this).find("rect").css("fill", "rgba(0,0,0,0)");
-                    }).on("click", function () {
-                        that.closePopup();
-                    });
-
-                    this.$bgObj.css('background-color', dimColor(this.cfg.themeColor, .2));
-                    //背景是否显示
-                    if (this.cfg.isShowBg) {
-                        this.$bgObj.appendTo("body").append(this.$popupObj);
-                        this.$bgObj.off("click").on("click", function () {
-                            if (that.cfg.isClickBgClose) {
-                                that.closePopup();
-                            } else {
-                                that.$popupObj.addClass("lzy_popup_show_6").removeClass("lzy_popup_show_" + that.cfg.animation);
-                                setTimeout(function () {
-                                    that.$popupObj.removeClass("lzy_popup_show_6");
-                                }, 300);
-                            }
-                        });
-                    } else this.$popupObj.appendTo("body");
-
-                    //设置边框阴影
-                    this.$popupObj.css({'box-shadow': "0 0 " + (this.cfg.isShowShadow ? this.cfg.shadowSize.toString().replace("px", "") + "px " + this.cfg.themeColor : "0")});
-
+                    this.$icon.css({'border-color': '#fff', 'color': '#fff'});
                     //是否显示图标
-                    if (this.cfg.isShowIcon) {
-                        if (this.cfg.icon) {
+                    if (this.cfg.showIcon) {
+                        var sIcon = this.cfg.icon;
+                        if (!isEmpty(sIcon)) {
                             //更换图标
-                            if (this.cfg.icon && this.cfg.icon.indexOf("/") >= 0) {
+                            if (sIcon.indexOf("base64") >= 0
+                                || "gif,jpg,jpeg,png,gif,jpg,png".indexOf(sIcon.toString().substr(sIcon.lastIndexOf(".") + 1)) >= 0) {
                                 this.$icon.css({
-                                    'background-image': 'url(' + this.cfg.icon + ')',
+                                    'background-image': 'url(' + sIcon + ')',
                                     'border-radius': 0,
                                     'border': 'none'
-                                }).html("");
+                                }).empty().show();
                             } else {
-                                this.$icon.html(this.cfg.icon);
+                                this.$icon.show().html(sIcon);
                             }
                         }
                     } else {
                         this.$icon.hide();
                     }
-                    //是否允许拖动
-                    if (this.cfg.allowedMove) {
-                        //拖动事件
-                        that.$nav.addClass("lzy_popup_nav_move").off("mousedown").mousedown(function (e) {
-                            var isMove = true;
-                            var div_x = e.pageX - that.$popupObj.offset().left;
-                            var div_y = e.pageY - that.$popupObj.offset().top;
-                            $(document).off("mousemove mouseup").mousemove(function (e) {
-                                if (isMove) that.$popupObj.css({'left': e.pageX - div_x, 'top': e.pageY - div_y});
-                            }).mouseup(function () {
-                                isMove = false;
-                            });
-                        });
-                    }
+                    this.$title.css({'color': '#fff'});
+                    if (isIE()) this.$title.css('line-height', "33px");//适配IE浏览器样式
                     //是否允许放大全屏
                     if (this.cfg.allowedFullscreen) {
-                        this.$full.show()
-                            .append($(this.zoominBtn.replace(/%color/g, this.zoomBtnColor)))
+                        this.$full.show().html($(this.zoominBtn.replace(/%color/g, "#fff")))
                             .off("mouseenter mouseleave click")
                             .hover(function () {
-                                $(this).css("background-color", that.cfg.themeStyle === "default" ? darkColor(that.cfg.themeColor, .85) : dimColor(that.cfg.themeColor, .25));
+                                $(this).css("background-color", darkColor(that.cfg.themeColor, .85));
                             }, function () {
                                 $(this).css("background-color", "rgba(0,0,0,0)");
                             })
-                            .on("click", function () {
+                            .on("click", function (e) {
+                                e.stopPropagation();
                                 $(this).css("background-color", "rgba(0,0,0,0)");
                                 if ($(this).find("line").length === 0) {
-                                    $(this).html($(that.zoomoutBtn.replace(/%color/g, that.zoomBtnColor)));
-                                    that.fullTemp = {
+                                    $(this).html($(that.zoomoutBtn.replace(/%color/g, "#fff")));
+                                    that.global.fullTag = {
                                         top: that.$popupObj.css("top"),
                                         left: that.$popupObj.css("left"),
                                         full: true
@@ -397,156 +400,219 @@
                                     that.$popupObj.animate({
                                         'top': 1,
                                         'left': 1,
-                                        'width': window.innerWidth - that.$popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                                        'height': window.innerHeight - that.$popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                                        'width': window.innerWidth - getDouBW(that.$popupObj) - 2,
+                                        'height': window.innerHeight - getDouBW(that.$popupObj) - 2
                                     }, "fast");
                                 } else {
-                                    $(this).html($(that.zoominBtn.replace(/%color/g, that.zoomBtnColor)));
-                                    that.fullTemp.full = false;
+                                    $(this).html($(that.zoominBtn.replace(/%color/g, "#fff")));
+                                    that.global.fullTag.full = false;
                                     //缩回动画
                                     that.$popupObj.animate({
-                                        'top': that.fullTemp.top,
-                                        'left': that.fullTemp.left,
+                                        'top': that.global.fullTag.top,
+                                        'left': that.global.fullTag.left,
                                         'width': that.cfg.width,
                                         'height': that.cfg.height
                                     }, "fast");
                                 }
                             });
+                    } else {
+                        this.$full.hide();
                     }
-                    //是否允许键盘事件
-                    if (this.cfg.allowedKeyboard) {
-                        $(document).on("keyup", function (event) {
-                            var e = event || window.event || arguments.callee.caller.arguments[0];
-                            if (e && e.keyCode === 27) that.closePopup();
-                        });
+                    this.$close.off("mouseenter mouseleave click").on("click", function () {
+                        that.closePopup();
+                    }).hover(function () {
+                        $(this).find("rect").css("fill", darkColor(that.cfg.themeColor, .85));
+                    }, function () {
+                        $(this).find("rect").css("fill", "rgba(0,0,0,0)");
+                    }).find("line").css({'stroke': '#fff'});
+                    if (this.cfg.vertical) {
+                        this.$cont.addClass("lzy_popup_v_cont");
+                    } else {
+                        this.$cont.removeClass("lzy_popup_v_cont");
                     }
-                    //配置标题
-                    if (this.cfg.title) this.$title.html(this.cfg.title);
-                    //配置内容
-                    if (this.cfg.content) {
-                        if ($(this.cfg.content).get(0)) this.$cont.append($(this.cfg.content));
-                        else this.$cont.html("<span>" + this.cfg.content + "</span>");
+                    this.$footer.css({'text-align': cfg.buttonAlign});
+                    //设置弹框的位置参照值
+                    if (this.cfg.insideOrFollow === 'follow') {
+                        //跟随状态
+                        if (isReferScreen(this.cfg.targetSelector)) {
+                            console.error("无法获取参照节点(" + this.cfg.targetSelector + ")的位置，请检查是否使用屏幕作参照对象(targetSelector='window')! \n");
+                            return false;
+                        }
+                        this.global.rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
+                    } else {
+                        if (isReferScreen(this.cfg.targetSelector)) {
+                            //绝对定位情况
+                            this.global.rect = {
+                                width: window.innerWidth,
+                                height: window.innerHeight,
+                                top: 0,
+                                right: 0,
+                                bottom: 0,
+                                left: 0
+                            };
+                        } else {
+                            //相对定位情况
+                            this.global.rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
+                        }
                     }
 
-                    if (isIE()) this.$title.css('line-height', "33px");//适配IE浏览器样式
+                    //背景是否显示
+                    if (this.cfg.showBackground) {
+                        //把弹框放到背景节点里
+                        this.$bgObj.appendTo("body").append(this.$popupObj).css({
+                            'background-color': dimColor(this.cfg.themeColor, .2),
+                            'width': this.global.rect.width,
+                            'height': this.global.rect.height,
+                            'top': this.global.rect.top,
+                            'left': this.global.rect.left
+                        }).off("click").on("click", function (e) {
+                            e.stopPropagation();
+                            if (that.cfg.clickBgToClose) {
+                                that.closePopup();
+                            } else {
+                                that.$popupObj.addClass("lzy_popup_show_6").removeClass("lzy_popup_show_" + that.cfg.animation);
+                                setTimeout(function () {
+                                    that.$popupObj.removeClass("lzy_popup_show_6");
+                                }, 300);
+                            }
+                        });
+                        this.$popupObj.off("click").on("click", function (e) {
+                            e.stopPropagation();
+                            return false;
+                        });
+                    } else {
+                        this.$popupObj.appendTo("body");
+                    }
+                    if (typeof(this.cfg.width) === "string" && this.cfg.width.indexOf("%") >= 0) {
+                        var pw = this.cfg.width.replace("%", "") / 100;
+                        if (that.cfg.showBackground) {
+                            //带有背景，背景节点就是弹框的父节点
+                            this.$popupObj.css('width', this.global.rect.width * pw);
+                        } else {
+                            //没有有背景，body节点就是弹框的父节点
+                            this.$popupObj.css('width', $("body").width() * pw);
+                        }
+                    }
+                    if (typeof(this.cfg.height) === "string" && this.cfg.height.indexOf("%") >= 0) {
+                        var ph = this.cfg.height.replace("%", "") / 100;
+                        if (that.cfg.showBackground) {
+                            this.$popupObj.css('height', this.global.rect.height * ph);
+                        } else {
+                            this.$popupObj.css('height', $("body").height() * ph);
+                        }
+                    }
+
+                    //是否允许键盘事件
+                    if (this.global.once === 1) {
+                        $(document).on("keyup", function (event) {
+                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            if (e && e.keyCode === 27) {
+                                if (that.cfg.allowedKeyboard) that.closePopup();
+                            }
+                        });
+                    }
+
+                    //配置标题
+                    if (!isEmpty(this.cfg.title)) this.$title.html(this.cfg.title);
+                    //配置内容
+                    if (!isEmpty(this.cfg.content)) {
+                        if ($(this.cfg.content).length > 0) {
+                            if (this.global.once === 1) {
+                                this.$cont.html($(this.cfg.content));
+                            }
+                        } else {
+                            this.$cont.html("<span>" + this.cfg.content + "</span>");
+                        }
+                    }
+                    this.global.once++;
                     return this;
                 },
                 showPopup: function (content, title) {
-                    try {
-                        for (var i = 0; i < this.openEvents.length; i++) this.openEvents[i].call(this);
-                    } catch (e) {
-                        console.error(e);
+                    for (var i = 0; i < this.events.openEvents.length; i++) {
+                        try {
+                            this.events.openEvents[i].call(this);
+                        } catch (e) {
+                            console.error(e);
+                        }
                     }
-                    if (this.fullTemp.full) {
+                    if (this.global.fullTag.full) {
                         //全屏状态设置
                         this.$popupObj.css({
                             'top': 1,
                             'left': 1,
                             "margin-top": 0,
                             "margin-left": 0,
-                            'width': window.innerWidth - this.$popupObj.css("border-left-width").replace("px", "") * 2 - 2,
-                            'height': window.innerHeight - this.$popupObj.css("border-left-width").replace("px", "") * 2 - 2
+                            'width': window.innerWidth - getDouBW(this.$popupObj) - 2,
+                            'height': window.innerHeight - getDouBW(this.$popupObj) - 2
                         });
                     } else {
                         //获取目标选择器的绝对位置
-                        var rect, rPos = this.cfg.relativePosition, that = this;
-                        var halfW = this.cfg.width / 2, halfH = this.cfg.height / 2, oft = this.cfg.relativeOffset;
+                        var rect = this.global.rect, pos = this.cfg.relativePosition, that = this;
+                        var halfW = this.$popupObj.width() / 2;
+                        var halfH = this.$popupObj.height() / 2;
+                        var oft = this.cfg.relativeOffset;
                         //设置位置
                         var setCss = function (val1, val2) {
-                            that.$popupObj.css({
-                                'left': parseFloat(val1) - that.cfg.width / 2,
-                                'top': parseFloat(val2) - that.cfg.height / 2
-                            });
-                        };
-                        //判断位置配置参数
-                        var checkPos = function () {
-                            var size = 0;
-                            for (var i = 1; i < arguments.length; i++) {
-                                if (arguments[0].indexOf(arguments[i]) >= 0) size++;
-                            }
-                            return size === arguments.length - 1;
+                            that.$popupObj.css({'left': parseFloat(val1) - halfW, 'top': parseFloat(val2) - halfH});
                         };
                         if (this.cfg.insideOrFollow === 'follow') {
                             //跟随状态
-                            if (isReferScreen(this.cfg.targetSelector)) {
-                                console.error("无法获取参照节点(targetSelector)的位置，请检查是否使用屏幕作参照对象(targetSelector='window')! \n");
-                                return false;
-                            }
-                            rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect();
-                            // this.$popupObj.css({marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0});
-                            if (checkPos(rPos, "top")) setCss(rect.left + halfW, rect.top - halfH - oft);
-                            if (checkPos(rPos, "bottom")) setCss(rect.left + halfW, rect.bottom + halfH + oft);
-                            if (checkPos(rPos, "left")) setCss(rect.left - halfW - oft, rect.top + halfH);
-                            if (checkPos(rPos, "right")) setCss(rect.right + halfW + oft, rect.top + halfH);
-                            if (checkPos(rPos, "top", "right")) setCss(rect.right + halfW + oft, rect.top - halfH - oft);
-                            if (checkPos(rPos, "top", "left")) setCss(rect.left - halfW - oft, rect.top - halfH - oft);
-                            if (checkPos(rPos, "bottom", "left")) setCss(rect.left - halfW - oft, rect.bottom + halfH + oft);
-                            if (checkPos(rPos, "bottom", "right")) setCss(rect.right + halfW + oft, rect.bottom + halfH + oft);
+                            if (pos === 2) setCss(rect.left + halfW, rect.top - halfH - oft);
+                            if (pos === 4) setCss(rect.left + halfW, rect.bottom + halfH + oft);
+                            if (pos === 8) setCss(rect.left - halfW - oft, rect.top + halfH);
+                            if (pos === 16) setCss(rect.right + halfW + oft, rect.top + halfH);
+                            if (pos === 18) setCss(rect.right + halfW + oft, rect.top - halfH - oft);
+                            if (pos === 10) setCss(rect.left - halfW - oft, rect.top - halfH - oft);
+                            if (pos === 12) setCss(rect.left - halfW - oft, rect.bottom + halfH + oft);
+                            if (pos === 20) setCss(rect.right + halfW + oft, rect.bottom + halfH + oft);
                         } else {
                             //内嵌状态
-                            if ("toprightbottomleftcenter".indexOf(rPos.replace(/\s+/g, "").substr(0, 2)) >= 0) {
-                                if (isReferScreen(this.cfg.targetSelector)) {
-                                    //绝对定位情况
-                                    rect = {
-                                        width: window.innerWidth,
-                                        height: window.innerHeight,
-                                        top: 0,
-                                        right: 0,
-                                        bottom: 0,
-                                        left: 0
-                                    };
-                                } else rect = $(this.cfg.targetSelector).get(0).getBoundingClientRect(); //相对定位情况
-                                if (checkPos(rPos, "top")) setCss(rect.left + rect.width / 2, rect.top + halfH + oft);
-                                if (checkPos(rPos, "bottom")) setCss(rect.left + rect.width / 2, rect.top + rect.height - halfH - oft);
-                                if (checkPos(rPos, "left")) setCss(rect.left + halfW + oft, rect.top + rect.height / 2);
-                                if (checkPos(rPos, "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height / 2);
-                                if (checkPos(rPos, "top", "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + halfH + oft);
-                                if (checkPos(rPos, "top", "left")) setCss(rect.left + halfW + oft, rect.top + halfH + oft);
-                                if (checkPos(rPos, "bottom", "left")) setCss(rect.left + halfW + oft, rect.top + rect.height - halfH - oft);
-                                if (checkPos(rPos, "bottom", "right")) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height - halfH - oft);
-                                if (checkPos(rPos, "center")) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                            if (pos.toString().indexOf(",") < 0) {
+                                // 相对定位或绝对定位情况
+                                if (pos === 1) setCss(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                                if (pos === 2) setCss(rect.left + rect.width / 2, rect.top + halfH + oft);
+                                if (pos === 4) setCss(rect.left + rect.width / 2, rect.top + rect.height - halfH - oft);
+                                if (pos === 8) setCss(rect.left + halfW + oft, rect.top + rect.height / 2);
+                                if (pos === 16) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height / 2);
+                                if (pos === 18) setCss(rect.left + rect.width - halfW - oft, rect.top + halfH + oft);
+                                if (pos === 10) setCss(rect.left + halfW + oft, rect.top + halfH + oft);
+                                if (pos === 12) setCss(rect.left + halfW + oft, rect.top + rect.height - halfH - oft);
+                                if (pos === 20) setCss(rect.left + rect.width - halfW - oft, rect.top + rect.height - halfH - oft);
                             } else {
-                                var arrpos = rPos.replace(/px/g, "").replace(/\s+/g, "").split(",");
-                                if (arrpos.length === 1) setCss(parseFloat(arrpos[0]) + halfW, halfH);
-                                else setCss(parseFloat(arrpos[0]) + halfW, parseFloat(arrpos[1]) + halfH);
+                                // x,y 坐标位置情况
+                                var arrpos = pos.split(",");
+                                setCss(parseFloat(arrpos[0]) + halfW, parseFloat(arrpos[1] || 0) + halfH);
                             }
                         }
-                        if (this.cfg.isShowBg) {
-                            this.$bgObj.css({
-                                width: rect.width,
-                                height: rect.height,
-                                top: rect.top,
-                                left: rect.left
-                            })
-                        }
                     }
-
                     //配置各项底部按键等的样式(因为添加按键是不定性的，后滞的，无法预先在初始化时配置)
-                    if (this.$footer.find(".lzy_footer_btn").length === 0) {
-                        this.$cont.css('height', 'calc(100% - 30px)').next().css('height', '0');
-                    }
-                    this.$footer.css("text-align", this.cfg.buttonAlign);
-                    this.$footer.find(".lzy_footer_btn").css({
+                    this.$popupObj.removeClass("lzy_custom_none_footer");
+                    if (this.$footer.find(".lzy_footer_btn").length === 0) this.$popupObj.addClass("lzy_custom_none_footer");
+                    this.$footer.css("text-align", this.cfg.buttonAlign).find(".lzy_footer_btn").css({
                         'border-color': this.cfg.themeColor,
                         'background-color': this.cfg.themeColor
-                    });
-                    if (isFire()) this.$footer.find(".lzy_footer_btn").css({'height': '23px'});
-                    if (isIE()) this.$footer.find(".lzy_footer_btn").css({'line-height': '24px'});
-
-                    this.$footer.find(".lzy_footer_btn_close").css({
+                    }).parent().find(".lzy_footer_btn_close").css({
                         'color': this.cfg.themeColor,
                         'border-color': this.cfg.themeColor,
                         'background-color': 'white'
                     });
+                    if (isFire()) this.$footer.find(".lzy_footer_btn").css({'height': '23px'});
+                    if (isIE()) this.$footer.find(".lzy_footer_btn").css({'line-height': '24px'});
+
                     //配置标题
-                    if (title) this.$title.html(title);
+                    if (!isEmpty(title)) this.$title.html(title);
                     //配置内容
-                    if (content && content !== "") {
-                        if ($(content).get(0)) this.$cont.html($(content));//如果时 dom 节点就直接添加
-                        else this.$cont.html("<span>" + content + "</span>");//如果是字符串便包括在 span 节点里（适配ie9）
+                    if (!isEmpty(content)) {
+                        if ($(content).length > 0) {
+                            //如果是 dom 节点就直接添加
+                            this.$cont.html($(content));
+                        } else {
+                            //如果是字符串便包括在 span 节点里（适配ie9）
+                            this.$cont.html("<span>" + content + "</span>");
+                        }
                     }
                     for (i = 0; i < 10; i++) this.$popupObj.removeClass("lzy_popup_close_" + i);
-                    if (this.cfg.isShowBg) this.$bgObj.show().css("z-index", getMaxZIndex());
+                    if (this.cfg.showBackground) this.$bgObj.show().css("z-index", getMaxZIndex());
 
                     this.$popupObj.css("z-index", getMaxZIndex()).show().addClass("lzy_popup_show_" + this.cfg.animation);//显示弹框，插入弹出动画样式
                     setTimeout(function () {
@@ -561,7 +627,10 @@
                         that.$popupObj.hide();//隐藏
                         that.$bgObj.hide();//隐藏
                         try {
-                            for (var i = 0; i < that.closeEvents.length; i++) that.closeEvents[i].call(that);//关闭按键回调方法执行
+                            //关闭按键回调方法执行
+                            for (var i = 0; i < that.events.closeEvents.length; i++) {
+                                that.events.closeEvents[i].call(that);
+                            }
                         } catch (e) {
                             console.error(e);
                         }
@@ -570,7 +639,7 @@
                 },
                 addButton: function (btnName, callback) {
                     var that = this, tempColor;
-                    var curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.$footer)
+                    var $curBtn = $("<button class='lzy_footer_btn'>" + btnName + "</button>").css({borderRadius: this.cfg.borderRadius}).appendTo(this.$footer)
                         .on("click", function () {
                             if (callback) callback.call(that);
                             if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) that.closePopup();//给含有“关闭”意思的按键添加关闭事件
@@ -578,17 +647,17 @@
                         .hover(function () {
                             //给按键添加悬浮样式事件（这里没有使用css来配置是因为主题颜色是活的，所以无法确定按键的颜色是什么）
                             tempColor = $(this).css("background-color");
-                            $(this).css('background-color', curBtn.hasClass("lzy_footer_btn_close") ? dimColor(that.cfg.themeColor, .1) : darkColor(that.cfg.themeColor, .92));
+                            $(this).css('background-color', $curBtn.hasClass("lzy_footer_btn_close") ? dimColor(that.cfg.themeColor, .1) : darkColor(that.cfg.themeColor, .92));
                         }, function () {
                             $(this).css('background-color', tempColor);
                         });
-                    if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) curBtn.addClass("lzy_footer_btn_close");
+                    if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) $curBtn.addClass("lzy_footer_btn_close");
                     var size = 0, btns = that.$footer.find(".lzy_footer_btn");
                     for (var i = 0; i < btns.length; i++) {
                         var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
                         size += tempSize + 22 + parseFloat(btns.eq(i).css('margin-right').replace("px", "")) + parseFloat(btns.eq(i).css('margin-left').replace("px", ""));
                     }
-                    if (size > that.$popupObj.width()) that.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便智能设置弹框的宽足与容纳按键
+                    if (size > that.$popupObj.width()) that.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便设置弹框的宽足与容纳按键
                     return this;
                 },
                 removeButton: function (nameOrIndex) {
@@ -613,12 +682,13 @@
                     var t = type, c = callback;//允许参数位置动态
                     if (typeof type === "function") c = type;
                     if (typeof callback === "string") t = callback;
-                    if (t.toLowerCase().indexOf("open") >= 0) this.openEvents.push(c);
-                    if (t.toLowerCase().indexOf("close") >= 0) this.closeEvents.push(c);
+                    if (t.toLowerCase().indexOf("open") >= 0) this.events.openEvents.push(c);
+                    if (t.toLowerCase().indexOf("close") >= 0) this.events.closeEvents.push(c);
                     return this;
                 }
             };
             return new lzyPopup(cfg);
         }
     });
+
 })(jQuery, window, document);

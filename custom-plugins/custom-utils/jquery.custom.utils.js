@@ -8,7 +8,7 @@
 ;(function ($, window, document, undefined) {
     /**
      * 动态数字，注动态数值和节点上的已有数值相同时无效（因为数值没有发生变化）
-     * @param num 数字,可以是小数或百分数
+     * @param num 数字,可以是小数或百分数，可以以任何字符串开头和结尾，但数值需要是连续的，比如：str123.45str，其中123.456是个正常数值
      * @param isThd 是否千分位化（可选），默认 true
      * @param delay 动画延时时长（可选），默认 500
      * @param grain 粒度，在规定时间内数字变化次数（可选），默认 100
@@ -28,92 +28,43 @@
             //千分位格式化
             toThd = function (num, isThd) {
                 if (!isThd) return num;
-                num = (num || 0).toString();
+                if (!/^[0-9]+.?[0-9]*$/.test(num)) return num;
+                num = num.toString();
                 return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
             };
         //配置参数
-        this.isThd = !!(isThd === null || isThd === undefined || isThd);
-        this.delay = delay || 500;
-        this.grain = grain || 100;
-        if (!that || that.text() === num.toString()) return;//判断节点是否正常，判断数据是否更新
+        this.isThd = isThd === null || isThd === undefined || isThd === true || isThd === "true";
+        this.delay = isNaN(delay) ? 500 : delay;
+        this.grain = isNaN(grain) ? 100 : grain;
+        this.flag = "INPUT,TEXTAREA".indexOf(that.get(0).tagName) >= 0;
+        // if (!that || that.text() === num.toString()) return;//判断节点是否正常，判断数据是否更新
         var pref = getPref(num.toString());//取出前缀
         var suf = getSuf(num.toString());//取出后缀
         var strNum = num.toString().replace(pref, "").replace(suf, "");//获取数值
         if (isNaN(strNum) || strNum === 0) {
-            that.html(num);//把非数字和 0 直接返回
+            that.flag ? that.val(num) : that.html(num);//把非数字和 0 直接返回
             console.error("非法数值！");
             return;
         }
         var int_dec = strNum.split(".");//分出整数和小数两部分
         var deciLen = int_dec[1] ? int_dec[1].length : 0;//取出小数的长度
 
-        var startNum = 0.0, endNum = parseFloat(strNum);//动态值开始值，动态值结束值
+        var startNum = 0.0, endNum = strNum;//动态值开始值，动态值结束值
         if (Math.abs(endNum) > 10) startNum = parseFloat(int_dec[0].substring(0, int_dec[0].length - 1) + (int_dec[1] ? ".0" + int_dec[1] : ""));
 
         var oft = (endNum - startNum) / that.grain, temp = 0;//oft 每次变化的值 ,temp用于作记录，避免程序出错不会结束循环
         var mTime = setInterval(function () {
-            that.html(pref + toThd(startNum.toFixed(deciLen), that.isThd) + suf);
+            var str = pref + toThd(startNum.toFixed(deciLen), that.isThd) + suf;
+            that.flag ? that.val(str) : that.html(str);
             startNum += oft;//递增
             temp++;
             if (Math.abs(startNum) >= Math.abs(endNum) || temp > 5000) {
-                //但递增的值达到给定值（或循环次数过多5000时）便停止循环
-                that.html(pref + toThd(endNum, that.isThd) + suf);
+                //递增的值达到给定值（或循环次数过多5000时）便停止循环
+                str = pref + toThd(endNum, that.isThd) + suf;
+                that.flag ? that.val(str) : that.html(str);
                 clearInterval(mTime);
             }
         }, that.delay / that.grain);
-    };
-
-    /**
-     * 复制所有常见样式
-     * @param jqueryObj 复制的对象
-     * @returns {jQuery} 返回自身对象
-     */
-    $.fn.copyStyle = function (jqueryObj) {
-        var styles = "Bg,BgAttachment,BgBlendMode,BgClip,BgColor,BgImage,BgOrigin,BgPosition,BgPositionX,BgPositionY,BgRepeat,BgRepeatX,BgRepeatY,BgSize,Bd,BdB1,BdB1Color,BdB1LeftRadius,BdB1R1Radius,BdB1Style,BdB1Width,BdCollapse,BdColor,BdImage,BdImageOutset,BdImageRepeat,BdImageSlice,BdImageSource,BdImageWidth,BdLeft,BdLeftColor,BdLeftStyle,BdLeftWidth,BdRadius,BdR1,BdR1Color,BdR1Style,BdR1Width,BdSpacing,BdStyle,BdTop,BdTopColor,BdTopLeftRadius,BdTopR1Radius,BdTopStyle,BdTopWidth,BdWidth,B1,boxShadow,boxSizing,caretColor,clear,clip,clipPath,cursor,direction,display,filter,float,font,fontDisplay,fontFamily,fontFeatureSettings,fontKerning,fontSize,fontStretch,fontStyle,Fv,FvCaps,FvEastAsian,FvLigatures,FvNumeric,fontVariationSettings,fontWeight,height,left,letterSpacing,lineHeight,margin,marginB1,marginLeft,marginR1,marginTop,maxWidth,maxZoom,minHeight,minWidth,minZoom,opacity,outline,outlineColor,outlineOffset,outlineStyle,outlineWidth,overflow,overflowAnchor,overflowWrap,overflowX,overflowY,overscrollBehavior,overscrollBehaviorX,overscrollBehaviorY,padding,paddingB1,paddingLeft,paddingR1,paddingTop,position,R1,textAlign,textAlignLast,textAnchor,textCombineUpR1,textDecoration,textDecorationColor,textDecorationLine,textDecorationSkipInk,textDecorationStyle,textIndent,textOrientation,textOverflow,textRendering,textShadow,textSizeAdjust,textTm,textUnderlinePosition,top,Tm,TmBox,TmOrigin,TmStyle,Tn,TnDelay,TnDuration,TnProperty,TnTimingFunction,verticalAlign,visibility,whiteSpace,width,wordBreak,wordSpacing,wordWrap,x,y,zIndex,zoom".replace(/Bg/g, "background").replace(/Bd/g, "border").replace(/Tn/g, "transition").replace(/Tm/g, "transform").replace(/Fv/g, "fontVariant").replace(/R1/g, "Right").replace(/B1/g, "Bottom").split(",");
-        for (var i = 0; i < styles.length; i++) this.css(styles[i], jqueryObj.css(styles[i]));
-        return this;
-    };
-
-    /**
-     * 给ifame 内嵌框添加click事件
-     * @param callback 回调函数
-     */
-    $.fn.iframeOnClick = function (callback) {
-        var IframeOnClick = {
-            resolution: 50,
-            iframes: [],
-            interval: null,
-            Iframe: function () {
-                this.element = arguments[0];
-                this.cb = arguments[1];
-                this.hasTracked = false;
-            },
-            track: function (element, cb) {
-                this.iframes.push(new this.Iframe(element, cb));
-                if (!this.interval) {
-                    var _this = this;
-                    this.interval = setInterval(function () {
-                        _this.checkClick();
-                    }, this.resolution);
-                }
-            },
-            checkClick: function () {
-                if (document.activeElement) {
-                    var activeElement = document.activeElement;
-                    for (var i in this.iframes) {
-                        if (activeElement === this.iframes[i].element) { // user is in this Iframe
-                            if (this.iframes[i].hasTracked === false) {
-                                this.iframes[i].cb.apply(window, []);
-                                this.iframes[i].hasTracked = true;
-                            }
-                        } else {
-                            this.iframes[i].hasTracked = false;
-                        }
-                    }
-                }
-            }
-        };
-        IframeOnClick.track($(this).get(0), callback);
     };
 
     $.extend({
@@ -130,22 +81,23 @@
             var params = cfg.params || {};
             var values = Object.keys(params);
             for (var i = 0; i < values.length; i++) {
-                if (!params[values[i]]) continue;
+                if (!params[values[i]] && params[values[i]] !== 0) continue;
                 form.append($("<input type='hidden' />").attr({"name": values[i]}).val(params[values[i]]));
             }
             form.appendTo("body").submit().remove();
         }
     });
 
+
     /**
-     * 对 json 自定义排序
+     * 对 json数组 自定义排序
      * 使用例子：[{key:'一'},{key:'二'},{key:'三'}]，正序转换后：[{key:'二'},{key:'三'},{key:'一'}]
      * 注：该方法主要是对 Array.sort() 方法的进一步扩展
      * @param key 需要排序的索引值
      * @param order 正序或逆序("arc","desc")，默认：正序
      * @returns {Array.<*>} 排序后的数组
      */
-    Array.prototype.sortJson = function (key, order) {
+    Array.prototype.sortArray = function (key, order) {
         if (this.length === 0) return [];
         var n = "desc" === (order || "").toLowerCase() ? 1 : -1;
         var code = /^[\u4e00-\u9fa5]/.test(this[0][key]) ? "zh" : "en";
@@ -189,71 +141,121 @@
 
     // 时间操作工具
     window.TimeTool = new function () {
+        this.__format = "yyyy-MM-dd HH:mm:ss";
+        /**
+         * 检测格式是否正确
+         * @param format 格式
+         * @param strTime 时间字符串
+         * @returns {boolean}
+         * @private
+         */
+        var __checkFormat = function (format, strTime) {
+            format = "^" + format.replace(/y{4}/g, "[0-9]{4}")
+                .replace(/M{2}|d{2}|H{2}|m{2}|s{2}/g, "[0-9]{2}")
+                .replace(/S{3}/g, "[0-9]{3}") + "$";
+            return new RegExp(format).test(strTime);
+        };
         /**
          * 内部方法，处理时间，保证返回 date 对象
-         * @param time 时间（兼容字符串，整型和日期Date类型）
+         * @param datetime 时间（兼容字符串，整型和日期Date类型）
+         * @param format 时间格式
          * @returns {Date}
          * @private
          */
-        var __dealTime2Obj = function (time) {
-            if (typeof time === "number") time = time.toString();
-            if (typeof time === "string") {
-                if (isNaN(time)) time = time.replace(/[^\d.]/g, "");
-                if (time.length % 2 === 1) {
-                    console.error("输入的日期不正确！");
-                    return new Date();
+        var __processDatetime = function (datetime, format) {
+            if (typeof datetime === "number") datetime = datetime.toString();
+            if (typeof datetime === "string") {
+                if (!__checkFormat(format, datetime)) {
+                    console.error("输入的日期：" + datetime + "；\n");
+                    console.error("日期的格式：" + format + "；\n");
+                    throw new Error("输入的日期和格式不对应！");
                 }
-                var year = parseInt(time.substr(0, 4));
-                var month = parseInt(time.substr(4, 2) || 1) - 1;
-                var day = parseInt(time.substr(6, 2) || 1);
-                var hour = parseInt(time.substr(8, 2) || 0);
-                var min = parseInt(time.substr(10, 2) || 0);
-                var sec = parseInt(time.substr(10, 2) || 0);
-                return new Date(year, month, day, hour, min, sec);
+                var get = function (sub) {
+                    if (format.indexOf(sub) < 0) return 0;
+                    var sTime = datetime.substr(format.indexOf(sub), sub.length);
+                    return parseInt(!sTime || sTime.length === 0 ? 0 : sTime);
+                };
+
+                var year = get("yyyy"),
+                    month = get("MM") - 1,
+                    day = get("dd"),
+                    hour = get("HH"),
+                    min = get("mm"),
+                    sec = get("ss"),
+                    ms = get("SSS");
+
+                return new Date(year, month, day, hour, min, sec, ms);
             }
-            if (time instanceof Date) return time;
+            if (datetime instanceof Date) return datetime;
             return new Date();
         };
         /**
-         * 内部方法，获取时间数组，[年，月，日，时，分]
-         * @param date date 对象
-         * @returns {[null,null,null,null,null]}
-         * @private
-         */
-        var __getDateArr = function (date) {
-            return [date.getFullYear().toString(), (date.getMonth() + 1).toString(), date.getDate().toString(),
-                date.getHours().toString(), date.getMinutes().toString()];
-        };
-        /**
-         * 内部方法，处理时间成字符串
-         * @param time 时间（兼容字符串，整型和日期Date类型）
-         * @returns {*}
-         * @private
-         */
-        var __dealTime2Str = function (time) {
-            if (typeof time === "string") return time;
-            var timeArr = __getDateArr(__dealTime2Obj(time));
-            return timeArr[0] + timeArr[1] + timeArr[2] + timeArr[3] + timeArr[4];
-        };
-        /**
-         * 内部方法，处理小于10的值
+         * 内部方法，处理小于10（或100）的值
          * @param value
+         * @param len
          * @returns {string}
          * @private
          */
-        var __dealLessTen = function (value) {
-            return value < 10 ? ('0' + value) : value;
+        var __ifLess = function (value, len) {
+            if (!len) return value < 10 ? ('0' + value) : value;
+            if (value < 100) return '0' + value;
+            if (value < 10) return '00' + value;
+            return value.toString();
         };
         /**
-         * 获取前(或后) num 天(或月或小时或分钟)的整型类型(格式：20190219)的时间
+         * 内部方法，获取自定义的时间对象，[年，月，日，时，分，秒，毫秒]
+         * @param date 时间对象
+         * @returns {*}
+         * @private
+         */
+        var __getDatetimeObj = function (date) {
+            return {
+                year: date.getFullYear().toString(),
+                month: __ifLess(date.getMonth() + 1),
+                day: __ifLess(date.getDate()),
+                hour: __ifLess(date.getHours()),
+                min: __ifLess(date.getMinutes()),
+                sec: __ifLess(date.getSeconds()),
+                ms: __ifLess(date.getMilliseconds(), 3)
+            };
+        };
+        /**
+         * 内部方法，格式化时间
+         * @param timeObj 自定义的时间对象
+         * @param format 时间格式
+         * @returns {XML|string}
+         * @private
+         */
+        var __doFormat = function (timeObj, format) {
+            return format.replace("yyyy", timeObj.year)
+                .replace("MM", timeObj.month)
+                .replace("dd", timeObj.day)
+                .replace("HH", timeObj.hour)
+                .replace("mm", timeObj.min)
+                .replace("ss", timeObj.sec)
+                .replace("SSS", timeObj.ms);
+        };
+        /**
+         * 设置全局时间格式
+         * @param format 时间格式
+         * @returns {TimeTool}
+         */
+        this.setFormat = function (format) {
+            if (format) this.__format = format;
+            return this;
+        };
+        /**
+         * 获取前(或后) num 天(/月/小时/分钟/秒/毫秒)的时间（参数的排序我经过多次考虑而确定的，也没法兼容参数无序支持）
          * @param num 粒度，正数即日期向后，负数即日期向前
-         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
-         * @param time 时间（兼容字符串，整型和日期Date类型）
+         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4),sec(或 5),ms(或 6)；默认：day(或 2)。
+         * @param time 时间（兼容字符串，整型和日期Date类型），可选参数，如果为空则使用系统当前时间
+         * @param format 时间格式，可选参数，为空则使用默认格式 "yyyy-MM-dd HH:mm:ss"
+         * @param objType 返回的数据类型，可选参数，默认：string，另外还有 number 和 date；如果非string类型则format参数无效。
          * @returns {*}
          */
-        this.getIntTime = function (num, type, time) {
-            num = num || 0;
-            var strTime, timeArr, date = __dealTime2Obj(time);
+        this.getTime = function (num, type, time, format, objType) {
+            num = isNaN(num) ? 0 : parseInt(num);
+            var date = __processDatetime(time, this.__format);
             if (type) type = type.toLowerCase();
             if (type === "month" || type === 1) {
                 var month = date.getMonth() + 1, newMon;
@@ -261,163 +263,132 @@
                     num = Math.abs(num);
                     newMon = num - month;
                     if (newMon < 0) {
-                        strTime = date.getFullYear() + "" + __dealLessTen(month - num);
+                        date.setMonth(month - num - 1);
                     }
                     if (newMon === 0) {
-                        strTime = date.getFullYear() - 1 + "12";
+                        date.setFullYear(date.getFullYear() - 1);
+                        date.setMonth(12 - 1);
                     }
                     if (newMon > 0) {
                         if (newMon % 12 === 0) {
-                            strTime = date.getFullYear() - parseInt(newMon / 12) - 1 + "12";
+                            date.setFullYear(date.getFullYear() - parseInt(newMon / 12) - 1);
+                            date.setMonth(12 - 1);
                         } else {
-                            strTime = date.getFullYear() - parseInt(newMon / 12) - 1 + "" + __dealLessTen(12 - newMon % 12);
+                            date.setFullYear(date.getFullYear() - parseInt(newMon / 12) - 1);
+                            date.setMonth(12 - newMon % 12 - 1);
                         }
                     }
                 } else {
                     newMon = date.getMonth() + 1 + num;
                     if (newMon <= 12) {
-                        strTime = date.getFullYear() + "" + __dealLessTen(newMon);
+                        date.setMonth(newMon - 1);
                     } else {
                         if (newMon % 12 === 0) {
-                            strTime = date.getFullYear() + parseInt(newMon / 12) - 1 + "12";
+                            date.setFullYear(date.getFullYear() + parseInt(newMon / 12) - 1);
+                            date.setMonth(12 - 1);
                         } else {
-                            strTime = date.getFullYear() + parseInt(newMon / 12) + "" + __dealLessTen(newMon % 12);
+                            date.setFullYear(date.getFullYear() + parseInt(newMon / 12));
+                            date.setMonth(newMon % 12 - 1);
                         }
                     }
                 }
             }
             if (!type || type === "day" || type === 2) {
                 date.setTime(date.getTime() + num * 24 * 60 * 60 * 1000);
-                timeArr = __getDateArr(date);
-                strTime = timeArr[0] + __dealLessTen(timeArr[1]) + __dealLessTen(timeArr[2]);
             }
             if (type === "hour" || type === 3) {
                 date.setTime(date.getTime() + num * 60 * 60 * 1000);
-                timeArr = __getDateArr(date);
-                strTime = timeArr[0] + __dealLessTen(timeArr[1]) + __dealLessTen(timeArr[2]) + __dealLessTen(timeArr[3]);
             }
             if (type === "min" || type === 4) {
                 date.setTime(date.getTime() + num * 60 * 1000);
-                timeArr = __getDateArr(date);
-                strTime = timeArr[0] + __dealLessTen(timeArr[1]) + __dealLessTen(timeArr[2]) + __dealLessTen(timeArr[3]) + __dealLessTen(timeArr[4]);
             }
-            return parseInt(strTime);
+            if (type === "sec" || type === 5) {
+                date.setTime(date.getTime() + num * 1000);
+            }
+            if (type === "ms" || type === 6) {
+                date.setTime(date.getTime() + num);
+            }
+
+            if (objType) objType = objType.toLowerCase();
+            if ("date" === objType) return date;
+            if ("num" === objType) return date.getTime();
+            return __doFormat(__getDatetimeObj(date), (!format || format.length === 0 ? this.__format : format).toString());
 
         };
-        /**
-         * 获取前(或后) num 天(或月或小时或分钟)的格式的类型(格式：2019-02-19, 拼接的字符串可以自定义)的时间
-         * @param num 粒度，正数即日期向后，负数即日期向前
-         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
-         * @param time 时间（兼容字符串，整型和日期Date类型）
-         * @param str1 年月日间的拼接字符，默认：“-”
-         * @param str2 小数分钟间的拼接字符，默认：“:”
-         * @returns {*}
-         */
-        this.getFormatTime = function (num, type, time, str1, str2) {
-            return this.formatTime(this.getIntTime(num, type, time), str1, str2);
+        this.getBeforeTime = function (num, type, time, format, objType) {
+            return this.getTime(-(num || 0), type, time, format, objType);
         };
-        this.getIntMonth = function (num, time) {
-            return this.getIntTime(num, "month", time);
+        this.getAfterTime = function (num, type, time, format, objType) {
+            return this.getTime((num || 0), type, time, format, objType);
         };
-        this.getIntDay = function (num, time) {
-            return this.getIntTime(num, "day", time);
+        this.getMonth = function (num, time, format, objType) {
+            return this.getTime(num, "month", time, format, objType);
         };
-        this.getIntHour = function (num, time) {
-            return this.getIntTime(num, "hour", time);
+        this.getDay = function (num, time, format, objType) {
+            return this.getTime(num, "day", time, format, objType);
         };
-        this.getIntMin = function (num, time) {
-            return this.getIntTime(num, "min", time);
+        this.getHour = function (num, time, format, objType) {
+            return this.getTime(num, "hour", time, format, objType);
         };
-        this.getFormatMonth = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(num, "month", time), str1, str2);
+        this.getMin = function (num, time, format, objType) {
+            return this.getTime(num, "min", time, format, objType);
         };
-        this.getFormatDay = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(num, "day", time), str1, str2);
+        this.getSec = function (num, time, format, objType) {
+            return this.getTime(num, "sec", time, format, objType);
         };
-        this.getFormatHour = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(num, "hour", time), str1, str2);
+        this.getBeforeMonth = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "month", time, format, objType);
         };
-        this.getFormatMin = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(num, "min", time), str1, str2);
+        this.getBeforeDay = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "day", time, format, objType);
         };
-        this.getIntTimeBefore = function (num, type, time) {
-            return this.getIntTime(-(num || 0), type, time);
+        this.getBeforeHour = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "hour", time, format, objType);
         };
-        this.getFormatTimeBefore = function (num, type, time, str1, str2) {
-            return this.formatTime(this.getIntTime(-(num || 0), type, time), str1, str2);
+        this.getBeforeMin = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "min", time, format, objType);
         };
-        this.getIntMonthBefore = function (num, time) {
-            return this.getIntTime(-(num || 0), "month", time);
+        this.getBeforeSec = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "sec", time, format, objType);
         };
-        this.getIntDayBefore = function (num, time) {
-            return this.getIntTime(-(num || 0), "day", time);
+        this.getBeforeMS = function (num, time, format, objType) {
+            return this.getTime(-(num || 0), "ms", time, format, objType);
         };
-        this.getIntHourBefore = function (num, time) {
-            return this.getIntTime(-(num || 0), "hour", time);
+        this.getAfterMonth = function (num, time, format, objType) {
+            return this.getTime((num || 0), "month", time, format, objType);
         };
-        this.getIntMinBefore = function (num, time) {
-            return this.getIntTime(-(num || 0), "min", time);
+        this.getAfterDay = function (num, time, format, objType) {
+            return this.getTime((num || 0), "day", time, format, objType);
         };
-        this.getFormatMonthBefore = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(-(num || 0), "month", time), str1, str2);
+        this.getAfterHour = function (num, time, format, objType) {
+            return this.getTime((num || 0), "hour", time, format, objType);
         };
-        this.getFormatDayBefore = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(-(num || 0), "day", time), str1, str2);
+        this.getAfterMin = function (num, time, format, objType) {
+            return this.getTime((num || 0), "min", time, format, objType);
         };
-        this.getFormatHourBefore = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(-(num || 0), "hour", time), str1, str2);
+        this.getAfterSec = function (num, time, format, objType) {
+            return this.getTime((num || 0), "sec", time, format, objType);
         };
-        this.getFormatMinBefore = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime(-(num || 0), "min", time), str1, str2);
+        this.getAfterMS = function (num, time, format, objType) {
+            return this.getTime((num || 0), "ms", time, format, objType);
         };
-        this.getIntTimeAfter = function (num, type, time) {
-            return this.getIntTime((num || 0), type, time);
-        };
-        this.getFormatTimeAfter = function (num, type, time, str1, str2) {
-            return this.formatTime(this.getIntTime((num || 0), type, time), str1, str2);
-        };
-        this.getIntMonthAfter = function (num, time) {
-            return this.getIntTime((num || 0), "month", time);
-        };
-        this.getIntDayAfter = function (num, time) {
-            return this.getIntTime((num || 0), "day", time);
-        };
-        this.getIntHourAfter = function (num, time) {
-            return this.getIntTime((num || 0), "hour", time);
-        };
-        this.getIntMinAfter = function (num, time) {
-            return this.getIntTime((num || 0), "min", time);
-        };
-        this.getFormatMonthAfter = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime((num || 0), "month", time), str1, str2);
-        };
-        this.getFormatDayAfter = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime((num || 0), "day", time), str1, str2);
-        };
-        this.getFormatHourAfter = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime((num || 0), "hour", time), str1, str2);
-        };
-        this.getFormatMinAfter = function (num, time, str1, str2) {
-            return this.formatTime(this.getIntTime((num || 0), "min", time), str1, str2);
+        this.now = function (format, objType) {
+            return this.getTime(null, null, null, format, objType);
         };
         /**
          * 格式化时间
+         * @param inFormat 输入的时间的格式，必须参数，必须对应 time 参数的格式
          * @param time 时间（兼容字符串，整型和日期Date类型）
-         * @param str1 年月日间的拼接字符，默认：“-”
-         * @param str2 小数分钟间的拼接字符，默认：“:”
+         * @param outFormat 格式后输出的时间格式，可选参数，为空则使用 全局变量的format参数
          * @returns {*}
          */
-        this.formatTime = function (time, str1, str2) {
+        this.formatTime = function (inFormat, time, outFormat) {
             if (!time) {
                 console.error("请输入时间！");
                 return null;
             }
-            time = time.toString().replace(/[^\d.]/g, "");
-            if (time.length === 6) return time.substr(0, 4) + (str1 || "-") + time.substr(4, 2);
-            if (time.length === 8) return time.substr(0, 4) + (str1 || "-") + time.substr(4, 2) + (str1 || "-") + time.substr(6, 2);
-            if (time.length === 10) return time.substr(0, 4) + (str1 || "-") + time.substr(4, 2) + (str1 || "-") + time.substr(6, 2) + " " + time.substr(8, 2) + (str2 || ":") + "00";
-            if (time.length === 12) return time.substr(0, 4) + (str1 || "-") + time.substr(4, 2) + (str1 || "-") + time.substr(6, 2) + " " + time.substr(8, 2) + (str2 || ":") + time.substr(10, 2);
-            return time;
+            var timeObj = __getDatetimeObj(__processDatetime(time, inFormat));
+            return __doFormat(timeObj, (!outFormat || outFormat.length === 0 ? this.__format : outFormat).toString());
         };
         /**
          * 时间转整型（简单的把非数字移除）
@@ -437,28 +408,32 @@
             if (type === "day" || type === 2) end = 8;
             if (type === "hour" || type === 3) end = 10;
             if (type === "min" || type === 4) end = 12;
+            if (type === "sec" || type === 5) end = 14;
+            if (type === "ms" || type === 6) end = 17;
             return parseInt(time.substr(0, end));
         };
         /**
          * 计算两个时间之间的时间长度
          * @param startTime 开始时间
          * @param endTime 结束时间，注：开始时间大于结束时间则返回负数
-         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
+         * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4),sec(或 5),ms(或 6)；默认：day(或 2)。
          * @returns {*}
          */
-        this.calculateTime = function (startTime, endTime, type) {
-            var sTime = __dealTime2Obj(startTime);
-            var eTime = __dealTime2Obj(endTime);
+        this.countTime = function (startTime, endTime, type) {
+            var sTime = __processDatetime(startTime, this.__format);
+            var eTime = __processDatetime(endTime, this.__format);
             var millisecond = eTime.getTime() - sTime.getTime();
             if (type) type = type.toLowerCase();
             if (type === "month" || type === 1) {
-                var timeArr = __getDateArr(new Date(Math.abs(millisecond)));
-                var oftMonth = (timeArr[0] - 1970) * 12 + parseInt(timeArr[1]) - 1;
+                var timeobj = __getDatetimeObj(new Date(Math.abs(millisecond)));
+                var oftMonth = (timeobj.year - 1970) * 12 + parseInt(timeobj.month) - 1;
                 return millisecond >= 0 ? oftMonth : -oftMonth;
             }
             if (!type || type === "day" || type === 2) return parseInt(millisecond / 24 / 60 / 60 / 1000);
             if (type === "hour" || type === 3) return parseInt(millisecond / 60 / 60 / 1000);
             if (type === "min" || type === 4) return parseInt(millisecond / 60 / 1000);
+            if (type === "sec" || type === 5) return parseInt(millisecond / 1000);
+            if (type === "ms" || type === 6) return parseInt(millisecond);
             return null;
         };
         /**
@@ -468,8 +443,8 @@
          * @param type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或 4)；默认：day(或 2)。
          * @returns {*}
          */
-        this.calculateTimeRange = function (time1, time2, type) {
-            return Math.abs(this.calculateTime(time1, time2, type));
+        this.countTimeRange = function (time1, time2, type) {
+            return Math.abs(this.countTime(time1, time2, type));
         }
     };
 
@@ -520,7 +495,7 @@
                 }
                 return color;
             } else {
-                var hexColor = JSON.parse(__EN_COLOR())[color];
+                var hexColor = $.parseJSON(__EN_COLOR())[color];
                 if (!hexColor) {
                     console.error("抱歉！无该英文颜色");
                     return color;
@@ -540,7 +515,7 @@
             } else if (color.indexOf("rgb") >= 0) {
                 return __RGB2Hex(color);
             } else {
-                var hexColor = JSON.parse(__EN_COLOR())[color];
+                var hexColor = $.parseJSON(__EN_COLOR())[color];
                 if (!hexColor) {
                     console.error("抱歉！无该英文颜色");
                     return color;
@@ -551,9 +526,9 @@
         /**
          * 插件-以值取色。不支持 rgba 颜色
          * @param colors 颜色数组(可以是一个颜色值，将会使用白色与其配色；必须)，可以是rgb,十六进制值，或英文名称值
-         * @param maxNum 最大值（可选），默认值：1000；
          * @param minNum 最小值（可选），默认值：0；
-         * @param density 密度（可选），默认值：30；含义：把颜色范围分成30层，越高，色差越小
+         * @param maxNum 最大值（可选），默认值：1000；
+         * @param density 密度（可选），默认值：100；含义：把颜色范围分成100层，越高，色差越小
          * @returns
          *          使用方法说明：
          * 1.此插件基于jQuery编写，使用时需要先导入jQuery；
@@ -565,16 +540,16 @@
          * 3.设置配置
          *     colorRange.getRGB(value,maxNum,minNum);
          *     value:给定值(该值需要在最大最小值范围之内)
-         *     maxNum:最大值（范围, 可选），这里不设置便将使用 创建的对象中的 maxNum ，这么做的原因主要是因为兼容 取值范围不固定的情况，下同
          *     minNum:最小值（范围，可选）
+         *     maxNum:最大值（范围, 可选），这里不设置便将使用 创建的对象中的 maxNum ，这么做的原因主要是因为兼容 取值范围不固定的情况，minNum同
          *     return:对应给定值的颜色(rgb值)
          */
-        this.createRange = function (colors, maxNum, minNum, density) {
+        this.createRange = function (colors, minNum, maxNum, density) {
             var that = this;
-            var ColorRange = function (colors, maxNum, minNum, density) {
+            var ColorRange = function (colors, minNum, maxNum, density) {
                 if (!colors) throw new Error('颜色值未配置');
                 var attrColors = [];
-                if (Array.isArray(colors)) {
+                if (colors instanceof Array) {
                     if (colors.length === 0) throw new Error('颜色组为空');
                     attrColors = colors;
                 } else {
@@ -582,7 +557,7 @@
                 }
                 this.maxNum = maxNum || 1000;
                 this.minNum = minNum || 0;
-                this.num = density || 50;
+                this.num = density || 100;
                 this.arrColor = [];
                 if (this.minNum > this.maxNum) {
                     var temp = this.maxNum;
@@ -618,7 +593,7 @@
                 }
             };
             ColorRange.prototype.getRGB = function (value, maxNum, minNum) {
-                var val = value || 0, max = maxNum || this.maxNum, min = minNum || this.minNum;
+                var val = Number(value || 0), max = Number(maxNum || this.maxNum), min = Number(minNum || this.minNum);
                 if (val > max) val = max;
                 if (val < min) val = min;
                 val = val - min;
@@ -627,22 +602,21 @@
                 return this.arrColor[idx === this.arrColor.length ? idx - 1 : idx];
 
             };
-            return new ColorRange(colors, maxNum, minNum, density);
+            return new ColorRange(colors, minNum, maxNum, density);
         };
     };
 
     /**
      * 格式数字,千位
-     * @param val 数
+     * @param value 数
      * @returns {string}
      */
-    window.toThd = function (val) {
-        var num = (val || this || "error").toString();
-        if (isNaN(num)) return "NaN";
+    window.toThd = function (value) {
+        if (!/^[0-9]+.?[0-9]*$/.test(value)) return value;
+        var num = value.toString();
         return num.replace(num.indexOf(".") > 0 ? /(\d)(?=(\d{3})+(?:\.))/g : /(\d)(?=(\d{3})+(?:$))/g, '$1,');
-    };//添加方法在全局变量中
-    String.prototype.toThd = toThd;//扩展String类型的方法，主要是因为平常开发者的类型不固定，数字类型会转在字符串类型上
-    Number.prototype.toThd = toThd;//所以为了兼容两者，两种类型都添加上
+    };
+
 
 })(jQuery, window, document);
 

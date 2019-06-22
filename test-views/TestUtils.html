@@ -3,112 +3,602 @@
 <head>
     <meta charset="UTF-8">
     <title>index5</title>
-    <script src="../js/jquery-1.9.1.min.js"></script>
+    <!--<script src="../js/jquery-1.9.1.min.js"></script>-->
+    <script src="../js/jQuery v1.10.2.js"></script>
     <script src="../custom-plugins/custom-utils/jquery.custom.utils.js"></script>
+    <style>
+        .module {
+            width: 1300px;
+            height: auto;
+            min-height: 200px;
+            margin: 10px auto;
+            background-color: #fff5d5;
+            padding: 10px;
+        }
+
+        .title {
+            margin: 5px 10px;
+            padding: 5px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid;
+        }
+
+        .demo {
+            width: calc(100% - 40px);
+            height: auto;
+            min-height: 100px;
+            margin: 10px;
+            padding: 10px;
+            background-color: #ffeebb;
+        }
+
+        .son-title {
+            width: 320px;
+            height: auto;
+            margin-bottom: 5px;
+        }
+
+        .demo-cont {
+            height: auto;
+            padding: 5px;
+            background-color: #fffcf0;
+        }
+
+        .demo-cont > p,
+        .demo-cont > div {
+            margin: 5px 0;
+        }
+
+        .demo-cont > div {
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ffeeaa;
+        }
+
+        .demo-cont > div:last-child {
+            border-bottom: none;
+        }
+
+        .demo-cont > p.ex {
+            color: green;
+        }
+
+        .demo-cont > div * {
+            font-size: 13px;
+        }
+
+        input {
+            padding-left: 5px;
+            padding-right: 5px;
+            width: 150px;
+        }
+
+        input[type=button] {
+            width: 100px;
+        }
+
+        input[type=radio] {
+            width: 12px;
+        }
+
+        #showColor {
+            width: 66px;
+            height: 20px;
+            margin-bottom: -5px;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border: 1px solid #d5b784;
+        }
+
+        table tr td {
+            border: 1px solid #d5b784;
+        }
+
+        table tr td:first-child {
+            width: 20px;
+            text-align: center;
+        }
+
+        .obj, .ex {
+            color: green;
+        }
+
+        .str {
+            color: blue;
+        }
+
+        .sor {
+            color: #cc07a0;
+        }
+
+        .fun {
+            color: #be9142;
+        }
+
+        .para {
+            color: #05314d;
+        }
+
+    </style>
     <script>
+
+        var list = [
+            {key1: 1, key2: "a", key3: "我"},
+            {key1: 2, key2: "b", key3: "是"},
+            {key1: 3, key2: "c", key3: "程"},
+            {key1: 4, key2: "d", key3: "序"},
+            {key1: 5, key2: "e", key3: "员"}
+        ];
         $(function () {
-            console.log(TimeTool.getIntTime(1, "hour"));
-            console.log(TimeTool.getFormatTime(1, "hour"));
-
-            var sortFun = function (key, order) {
-                try {
-                    var val = $("#temp").val();
-                    var jsonVal = JSON.parse(val);
-                    jsonVal.sortJson(key, order);
-                    var txt = "[\n";
-                    for (var i = 0; i < jsonVal.length; i++) {
-                        txt += "{ key1:'" + jsonVal[i].key1 + "', key2:'" + jsonVal[i].key2 + "', key3:'" + jsonVal[i].key3 + "'}\n"
-                    }
-                    txt += "]";
-                    $("#show").val(txt);
-
-                } catch (e) {
-                    $("#show").val("json数值的格式错误！");
-                }
-            };
-
-
-            $("#tool1").on("click", function () {
-                sortFun("key1");
-            });
-
-            $("#tool2").on("click", function () {
-                sortFun("key2");
-            });
-
-            $("#tool3").on("click", function () {
-                sortFun("key3");
-            });
-
-            $("#tool4").on("click", function () {
-                sortFun("key1", "desc");
-            });
-
-            $("#tool5").on("click", function () {
-                sortFun("key2", "desc");
-            });
-
-            $("#tool6").on("click", function () {
-                sortFun("key3", "desc");
-            });
-
-            console.log(2425423.2345234.toThd());
-            console.log("93434.23234".toThd());
-            console.log(toThd(234234.2342));
-
-            $("#tool").on("click", function () {
-                $("#num").animateNum($("#val").val(), false, 1000);
-            });
-
-
-            $("#copy").on("click", function () {
-                $(this).copyStyle($("#reference"));
-            });
-
-            for (var i = -1; i > -100; i--) {
-                console.log(TimeTool.getIntTime(i, "Month"));
-            }
-
-            var range = ColorTool.createRange(["blue", "green", "yellow", "red"], 5000, 100, 120);
-            for (var i = 100; i < 5000; i += 50) {
-                $("body").append($("<div style='background-color: " + range.getRGB(i) + ";width: 100%;height: 5px;'></div>"))
-            }
+            console.log(list.sortArray("key1", "desc"));
         });
 
     </script>
 </head>
 <body>
 
-<textarea id="temp" style="width: 350px ;height: 200px;" title="">
-    [
-    { "key1": 1, "key2": "e", "key3": "我" },
-    { "key1": 3, "key2": "b", "key3": "你" },
-    { "key1": 5, "key2": "d", "key3": "他" },
-    { "key1": 4, "key2": "c", "key3": "好" },
-    { "key1": 2, "key2": "a", "key3": "福" }
-    ]
-</textarea><br/>
-(正序)
-<input type="button" value="key1排序" id="tool1">
-<input type="button" value="key2排序" id="tool2">
-<input type="button" value="key3排序" id="tool3"><br/>
-(逆序)
-<input type="button" value="key1排序" id="tool4">
-<input type="button" value="key2排序" id="tool5">
-<input type="button" value="key3排序" id="tool6"><br/>
-<textarea id="show" style="width: 350px ;height: 200px;" title=""></textarea>
+<div class="module">
+    <div class="title">动态数字：</div>
+    <div class="demo">
+        <div class="son-title">API：</div>
+        <div class="demo-cont">
+            <p class="ex">* <span class="para">@param </span>num 数字,可以是小数或百分数</p>
+            <p class="ex">* <span class="para">@param </span>isThd 是否千分位化（可选），默认 true</p>
+            <p class="ex">* <span class="para">@param </span>delay 动画延时时长（可选），默认 500</p>
+            <p class="ex">* <span class="para">@param </span>grain 粒度，在规定时间内数字变化次数（可选），默认 100</p>
+            <p>
+                <span class="obj">$</span>(
+                <span class="str">"</span>
+                <span class="sor">选择器</span>
+                <span class="str">"</span>).
+                <span class="fun">animateNum</span>(
+                <span class="str">num</span>,
+                <span class="str">isThd</span>,
+                <span class="str">delay</span>,
+                <span class="str">grain</span>);
+            </p>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用方法：</div>
+        <div class="demo-cont">
+            <p><span class="obj">$</span>(<span class="str">"</span><span class="sor">选择器</span><span
+                    class="str">"</span>).<span class="fun">animateNum</span>(<span class="str">12345</span>);</p>
+            <p><span class="obj">$</span>(<span class="str">"</span><span class="sor">选择器</span><span
+                    class="str">"</span>).<span class="fun">animateNum</span>(<span class="str">"348245.5323"</span>);
+            </p>
+            <p><span class="obj">$</span>(<span class="str">"</span><span class="sor">选择器</span><span
+                    class="str">"</span>).<span class="fun">animateNum</span>(<span class="str">"68.46%"</span>);</p>
+            <p><span class="obj">$</span>(<span class="str">"</span><span class="sor">选择器</span><span
+                    class="str">"</span>).<span class="fun">animateNum</span>(<span class="str">"$45878.235"</span>);
+            </p>
+            <p><span class="obj">$</span>(<span class="str">"</span><span class="sor">选择器</span><span
+                    class="str">"</span>).<span class="fun">animateNum</span>(<span
+                    class="str">"上升153253.245值"</span>,<span class="sor">false</span>,<span class="str">1000</span>);
+            </p>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用案例：</div>
+        <div class="demo-cont">
+            <div>
+                <input value="5867982421.342353" id="demo1" title="测试值"/>
+                <input type="button" value="测试" onclick="(function () {
+                    $('#test1').animateNum($('#demo1').val());
+                })();">
+                <input id="test1" title="测试结果值" disabled/>
+            </div>
+            <div>
+                <input value="￥2373467.342353" id="demo2" title="测试值"/>
+                <input type="button" value="测试" onclick="(function () {
+                    $('#test2').animateNum($('#demo2').val());
+                })();">
+                <input id="test2" title="测试结果值" disabled/>
+            </div>
+            <div>
+                <input value="99.98%" id="demo3" title="测试值"/>
+                <input type="button" value="测试" onclick="(function () {
+                    $('#test3').animateNum($('#demo3').val());
+                })();">
+                <input id="test3" title="测试结果值" disabled/>
+            </div>
+            <div>
+                <input value="增加56.34%" id="demo4" title="测试值"/>
+                <input type="button" value="测试" onclick="(function () {
+                    $('#test4').animateNum($('#demo4').val());
+                })();">
+                <span id="test4" title="测试结果值"></span>
+            </div>
+            <div>
+                <input value="5884232340932.423423" id="demo5" style="width: 180px;" title="测试值"/><br/>
+                <span>
+                    <span>千分位：</span>
+                    <input type="radio" name="isThd" id="thd_true" title="是" value="true">
+                    <label for="thd_true">是</label>
+                    <input type="radio" name="isThd" id="thd_false" title="否" value="false" checked>
+                    <label for="thd_false">否</label>
+                </span><br/>
+                <span>
+                    <span>动画时长(ms)：</span>
+                    <input name="isThd" id="delay" title="动画时长" value="1000" style="width: 73px;">
+                </span>
+                <input type="button" value="测试" onclick="(function () {
+                    $('#test5').animateNum($('#demo5').val(),$('input[name=isThd]:checked').val(),$('#delay').val());
+                })();">
+                <input id="test5" title="测试结果值" style="width: 200px;" disabled/>
+            </div>
+        </div>
+    </div>
 
-<br/>
-<input id="val" value="12632.754">
 
-<input type="button" value="动态数字" id="tool"><br/>
-<span id="num"></span>
+</div>
 
 
-<br/>
-<input type="button" value="参考对象" id="reference"
-       style="width: 200px;margin-left: 25px;background-color: blue;border-radius: 5px;"><br/>
-<input type="button" value="复制" id="copy"><br/>
+<div class="module">
+    <div class="title">时间操作工具：</div>
+    <div class="demo">
+        <div class="son-title">API（未具体罗列，具体看 js 文件注释）：</div>
+        <div class="demo-cont">
+            <p class="ex">* <span class="para">@param </span>format 必选，时间格式，为空则使用默认格式 "yyyy-MM-dd HH:mm:ss"</p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">setFormat</span>(<span class="str">format</span>);
+            </p>
+            <br/>
+            <p class="ex">* 以下 get**Time方法 只是举例，还有类似其他的未全部罗列</p>
+            <p class="ex">* <span class="para">@param </span>num 粒度，正数即日期向后，负数即日期向前。含有before或after的方法该值都为正数</p>
+            <p class="ex">* <span class="para">@param </span>type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或4),sec(或
+                5),ms(或 6)；默认：day(或 2)。</p>
+            <p class="ex">* <span class="para">@param </span>time 时间（兼容字符串，整型和日期Date类型），可选，如果为空则使用系统当前时间</p>
+            <p class="ex">* <span class="para">@param </span>format 可选，时间格式，为空则使用默认格式 "yyyy-MM-dd HH:mm:ss"</p>
+            <p class="ex">* <span class="para">@param </span>objType
+                可选，返回的数据类型，可选参数，默认：string，另外还有number和date；如果非string类型则format参数无效。</p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getTime</span>(<span class="str">num</span>, <span class="str">type</span>, <span
+                    class="str">time</span>, <span class="str">format</span>, <span class="str">objType</span>);
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getBeforeTime</span>(<span class="str">num</span>, <span class="str">type</span>,
+                <span class="str">time</span>, <span class="str">format</span>, <span class="str">objType</span>);
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getAfterHour</span>(<span class="str">num</span>, <span class="str">time</span>,
+                <span class="str">format</span>, <span class="str">objType</span>);
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getBeforeMonth</span>(<span class="str">num</span>, <span class="str">time</span>,
+                <span class="str">format</span>, <span class="str">objType</span>);
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">now</span>(<span class="str">format</span>, <span class="str">objType</span>);
+            </p>
+            <br/>
+            <p class="ex">* <span class="para">@param </span>startTime 开始时间</p>
+            <p class="ex">* <span class="para">@param </span>endTime 结束时间，注：开始时间大于结束时间则返回负数</p>
+            <p class="ex">* <span class="para">@param </span>type 时间类型，有 month(或 1),day(或 2),hour(或 3),min(或4),sec(或
+                5),ms(或 6)；默认：day(或 2)。</p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">countTime</span>(<span class="str">startTime</span>,<span
+                    class="str">endTime</span>,<span class="str">type</span>);
+            </p>
+            <p class="ex"> ps:我没有深入学习过day.js和moment.js，只是粗略的看了一下，感觉操作好麻烦，太多学习成本，所以写了一个简单的。 </p>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用方法：</div>
+        <div class="demo-cont">
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getTime</span>(<span class="str">5</span>, <span class="str">"hour"</span>,
+                <span class="str">"2019-05-23 15:42:25"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 后5个小时的时间 => 2019-05-23 20:42:25 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getTime</span>(<span class="str">-5</span>, <span class="str">"hour"</span>,
+                <span class="str">"2019-05-23 15:42:25"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 前5个小时的时间 => 2019-05-23 10:42:25 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getTime</span>(<span class="str">-5</span>, <span class="str">"hour"</span>,
+                <span class="str">"2019-05-23 15:42:25"</span>,<span class="str">"yyyyMMddHH"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 前5个小时的时间 => 2019052310 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getTime</span>(<span class="str">-5</span>, <span class="str">"hour"</span>,
+                <span class="str">"2019-05-23 15:42:25"</span>,<span class="str">"yyyy-MM-dd HH:00"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 前5个小时的时间 => 2019-05-23 10:00 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getBeforeTime</span>(<span class="str">5</span>, <span class="str">"hour"</span>,
+                <span class="str">"2019-05-23 15:42:25"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 前5个小时的时间 => 2019-05-23 10:42:25 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getAfterHour</span>(<span class="str">5</span>, <span class="str">"2019-05-23 15:42:25"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 后5个小时的时间 => 2019-05-23 20:42:25 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">getBeforeMonth</span>(<span class="str">5</span>, <span class="str">"2019-05-23 15:42:25"</span>);
+                <span class="ex">// 获取 2019-05-23 15:42:25 前5个月的时间 => 2018-12-23 15:42:25 </span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">now</span>();
+                <span class="ex">// 获取当前时间</span>
+            </p>
+            <p>
+                <span class="obj">TimeTool</span>.
+                <span class="fun">countTime</span>(<span class="str">"2017-05-23 15:42:25"</span>,
+                <span class="str">"2019-11-23 15:42:25"</span>, <span class="str">"day"</span>);
+                <span class="ex">// 计算 2017-05-23 15:42:25和2019-11-23 15:42:25 两个时间相差多少天 </span>
+            </p>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用案例：</div>
+        <div class="demo-cont">
+            <div>
+                设置全局时间格式：<input value="yyyy-MM-dd HH:mm" id="format" title="格式"
+                                onchange="TimeTool.setFormat(this.value);"/>
+                <span class="ex">&nbsp;// 注意：如果输入的时间和全局时间格式不符合会抛异常，异常信息看控制台打印</span>
+                <script>TimeTool.setFormat("yyyy-MM-dd HH:mm");</script>
+            </div>
+            <div>
+                时间：<input value="2019-03-26 14:40" id="time1" title="测试值"/>
+                粒度：<input value="5" id="num1" title="粒度" style="width: 40px;"/>
+                类型：
+                <select id="type1" title="时间类型"
+                        onchange="$('#time_test1').val('测试>>前N'+$(this).find('option:selected').text());">
+                    <option value="month" selected>月</option>
+                    <option value="day">日</option>
+                    <option value="hour">时</option>
+                    <option value="min">分</option>
+                </select>
+                <input type="button" value="测试>>前N月" onclick="(function () {
+                    $('#date1').val(TimeTool.getTime(-$('#num1').val(),$('#type1').val(),$('#time1').val()));
+                })();" id="time_test1">
+                结果：<input id="date1" title="测试结果值" disabled/>
+            </div>
+            <div>
+                时间：<input value="2019-03-26 14:40" id="time2" title="测试值"/>
+                粒度：<input value="8" id="num2" title="粒度" style="width: 40px;"/>
+                类型：
+                <select id="type2" title="时间类型"
+                        onchange="$('#time_test2').val('测试>>后N'+$(this).find('option:selected').text());">
+                    <option value="month" selected>月</option>
+                    <option value="day">日</option>
+                    <option value="hour">时</option>
+                    <option value="min">分</option>
+                </select>
+                <input type="button" value="测试>>后N月" onclick="(function () {
+                    $('#date2').val(TimeTool.getTime($('#num2').val(),$('#type2').val(),$('#time2').val()));
+                })();" id="time_test2">
+                结果：<input id="date2" title="测试结果值" disabled/>
+            </div>
+            <div>
+                时间：<input value="2019-03-26 14:40" id="time3" title="测试值"/>
+                粒度：<input value="5" id="num3" title="粒度" style="width: 40px;"/>
+                类型：
+                <select id="type3" title="时间类型"
+                        onchange="$('#time_test3').val('测试>>前N'+$(this).find('option:selected').text());">
+                    <option value="month" selected>月</option>
+                    <option value="day">日</option>
+                    <option value="hour">时</option>
+                    <option value="min">分</option>
+                </select>
+                输出格式：<input value="yyyyMMddHHmm" id="outformat3" title="格式"/>
+                <input type="button" value="测试>>前N月" onclick="(function () {
+                    $('#date3').val(TimeTool.getTime(-$('#num3').val(),$('#type3').val(),$('#time3').val(),$('#outformat3').val()));
+                })();" id="time_test3">
+                结果：<input id="date3" title="测试结果值" disabled/>
+                <span class="ex">&nbsp;// 注：输出格式为空则使用全局默认格式</span>
+            </div>
+            <div>
+                开始：<input value="2017-05-23 15:42" id="starttime4" title="测试值"/>
+                结束：<input value="2019-11-23 15:42" id="endtime4" title="测试值"/>
+                类型：
+                <select id="type4" title="时间类型">
+                    <option value="month" selected>月</option>
+                    <option value="day">日</option>
+                    <option value="hour">时</option>
+                    <option value="min">分</option>
+                </select>
+                <input type="button" value="计算时长" onclick="(function () {
+                    $('#date4').val(TimeTool.countTime($('#starttime4').val(),$('#endtime4').val(),$('#type4').val()));
+                })();">
+                结果：<input id="date4" title="测试结果值" disabled/>
+                <span class="ex">&nbsp;// 注：范围是向下取整，如2.6天算2天</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="module">
+    <div class="title">颜色操作工具：</div>
+    <div class="demo">
+        <div class="son-title">API：</div>
+        <div class="demo-cont">
+            <p class="ex">注：该工具不支持 rgba 颜色（因为透明颜色是需要结合父节点上的背景颜色才能转换的，父节点颜色未知）</p>
+            <p class="ex">* <span class="para">@param </span>color 颜色值，可以是十六进制颜色，英文名称颜色，rgb颜色</p>
+            <p>
+                <span class="obj">ColorTool</span>.
+                <span class="fun">toRGB</span>(<span class="str">color</span>);
+            </p>
+            <p>
+                <span class="obj">ColorTool</span>.
+                <span class="fun">toHEX</span>(<span class="str">color</span>);
+            </p>
+            <br/>
+            <p class="ex">* <span class="para">@param </span>colors
+                颜色数组(可以是一个颜色值，将会使用白色与其配色；必须)，可以是rgb,十六进制值，或英文名称值</p>
+            <p class="ex">* <span class="para">@param </span>minNum 最小值（可选），默认值：0；</p>
+            <p class="ex">* <span class="para">@param </span>maxNum 最大值（可选），默认值：1000；</p>
+            <p class="ex">* <span class="para">@param </span>density 密度（可选），默认值：30；含义：把颜色范围分成30层，越高，色差越小</p>
+            <p>
+                <span class="obj">ColorTool</span>.
+                <span class="fun">createRange</span>(<span class="str">colors</span>, <span class="str">minNum</span>,
+                <span class="str">maxNum</span>, <span class="str">density</span>);
+                <span style="color: green">插件-以值取色</span>
+            </p>
+
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用方法：</div>
+        <div class="demo-cont">
+            <p><span class="obj">ColorTool</span>.<span class="fun">toRGB</span>("#ffffff");</p>
+            <p><span class="obj">ColorTool</span>.<span class="fun">toRGB</span>("blue");</p>
+            <p><span class="obj">ColorTool</span>.<span class="fun">toHEX</span>("rgb(24,35,34)");</p>
+            <p><span class="obj">ColorTool</span>.<span class="fun">toHEX</span>("red");</p>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">使用案例：</div>
+        <div class="demo-cont">
+            <div>
+                颜色：<input value="#ffffff" id="color1" title="测试值"/>
+                <input type="button" value="转RGB" onclick="(function () {
+                    $('#rgbhex1').val(ColorTool.toRGB($('#color1').val()));
+                })();">
+                结果：<input id="rgbhex1" title="测试结果值" disabled/>
+            </div>
+            <div>
+                颜色：<input value="yellow" id="color2" title="测试值"/>
+                <input type="button" value="转RGB" onclick="(function () {
+                    $('#rgbhex2').val(ColorTool.toRGB($('#color2').val()));
+                })();">
+                结果：<input id="rgbhex2" title="测试结果值" disabled/>
+            </div>
+            <div>
+                颜色：<input value="rgb(35,24,79)" id="color3" title="测试值"/>
+                <input type="button" value="转HEX" onclick="(function () {
+                    $('#rgbhex3').val(ColorTool.toHEX($('#color3').val()));
+                })();">
+                结果：<input id="rgbhex3" title="测试结果值" disabled/>
+            </div>
+            <div>
+                颜色：<input value="green" id="color4" title="测试值"/>
+                <input type="button" value="转HEX" onclick="(function () {
+                    $('#rgbhex4').val(ColorTool.toHEX($('#color4').val()));
+                })();">
+                结果：<input id="rgbhex4" title="测试结果值" disabled/>
+            </div>
+            <div>
+                <p style="font-weight: bold;">问题一：假设 3000 对应 <span style="color: red;">红色</span>，100 对应
+                    <span style="color: green;">绿色</span>，而且中间是<span style="color: green;">绿色</span>
+                    >>
+                    <span style="color: yellow;">黄色</span>
+                    >>
+                    <span style="color: red;">红色</span>的渐变。求 888 对应<u>什么颜色</u>？</p>
+                <p>创建对象：var range = ColorTool.createRange(["green","yellow","red"],3000,100);</p>
+                <p>获取颜色：var rgb = range.getRGB(888);</p>
+                <p style="font-weight: bold;">问题二：需求改变，2000 对应 <span style="color: red;">红色</span>，250 对应
+                    <span style="color: green;">绿色</span>，求 888 对应<u>什么颜色</u>？</p>
+                <p>获取颜色：var rgb = range.getRGB(888,2000,250); //不需要再创建对象，但该范围只是当前一次有效</p>
+                <p style="font-weight: bold;">使用：</p>
+                颜色：<input value="green,yellow,red" id="color5" title="测试值" disabled/>
+                MAX：<input value="3000" id="max" title="max" style="width: 40px"/>
+                MIN：<input value="100" id="min" title="min" style="width: 40px"/>
+                测值：<input value="888" id="ofgVal" title="测值" style="width: 60px"/>
+                <input type="button" value="测试" id="color_test">
+                结果：<input id="rgbhex5" title="测试结果值" style="width: 90px;" disabled/>
+                <span id="showColor"></span>
+                <script type="text/javascript">
+                    var range;
+                    $("#color_test").on("click", function () {
+                        var max = $("#max").val(), min = $("#min").val();
+                        if (!range) range = ColorTool.createRange(["green", "yellow", "red"], max, min);
+
+                        var oft = $("#ofgVal").val();
+                        $("#rgbhex5").val(range.getRGB(oft, max, min));
+                        $("#showColor").css("background-color", range.getRGB(oft, max, min));
+
+                    });
+
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo">
+        <div class="son-title">应用实例：</div>
+        <div class="demo-cont">
+            <table id="scenarios"></table>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var getUUID = function () {
+                    var S4 = function () {
+                        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+                    };
+                    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+                };
+                var min = 0, max = 20;
+                var range = ColorTool.createRange(["green", "yellow", "red"], min, max);
+                for (var i = 0; i < max; i++) {
+                    $("#scenarios").append(" <tr>\n" +
+                        "   <td style=\"background-color: " + range.getRGB(max - i) + ";\">" + (i + 1) + "</td>\n" +
+                        "   <td>" + getUUID().toUpperCase() + "</td>\n" +
+                        "</tr>"
+                    )
+                }
+            })();
+        </script>
+    </div>
+</div>
+
+<div class="module">
+    <div class="title">其他小工具：</div>
+    <div class="demo">
+        <div class="son-title">Json 数组排序：</div>
+        <div class="demo-cont">
+            <pre>
+    var list = [
+        {key1: 1, key2: "a", key3: "我"},
+        {key1: 2, key2: "b", key3: "是"},
+        {key1: 3, key2: "c", key3: "程"},
+        {key1: 4, key2: "d", key3: "序"},
+        {key1: 5, key2: "e", key3: "员"}
+    ];
+
+    list.sortArray("key1", "desc");// 以 key1 字段倒序排序
+    list.sortArray("key2");// 以 key2 字段正序排序，排序的默认值：asc
+    list.sortArray("key3", "asc");// 以 key3 字段正序排序
+    list.shuffleArray();// 打乱排序
+    // 注：sortArray和shuffleArray 方法主要是对 Array.sort() 方法的进一步扩展
+    var sum = list.sumArray("key1");// 对 key1 字段进行相加，当前结果：15
+            </pre>
+        </div>
+    </div>
+    <div class="demo">
+        <div class="son-title">格式千分位：</div>
+        <div class="demo-cont">
+            <pre>
+    var str = "12345678.54321";
+    var val = 23456789.6543;
+
+    var newStr = toThd(str);//注意：返回值是字符串类型
+    newStr = toThd(val);
+            </pre>
+        </div>
+    </div>
+</div>
 
 
 </body>

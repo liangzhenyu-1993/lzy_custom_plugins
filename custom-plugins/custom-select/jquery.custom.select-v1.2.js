@@ -123,9 +123,7 @@
                 var pStyles = ['position', 'top', 'right', 'left', 'bottom', 'float', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom'];//位置方位的样式必须复制
                 for (var i = 0; i < pStyles.length; i++) this._parent.css(pStyles[i], this._select.css(pStyles[i]));
                 this._list = $("<div class='lzy_select_list'></div>").hide().appendTo("body");
-                this._parent.find(".lzy_s_p_arraw").css({
-                    "margin-top": this._parent.height() / 2 - this._parent.find(".lzy_s_p_arraw").height() / 2
-                });
+
                 var that = this;
                 var themeColor = isCopyStyle ? that._select.css("border-left-color") : that._parent.css("border-left-color");
 
@@ -153,7 +151,10 @@
                     for (i = 3; i < copyPStyle.length; i++) that._list.css(copyPStyle[i], that._select.css(copyPStyle[i]));
                     that._list.addClass("lzy_list_hover_" + that._randId + " lzy_list_selected_" + that._randId).css('width', that._select.outerWidth() - that._select.css("border-width").replace("px", "") * 2);
                 }
-
+                this._parent.find(".lzy_s_p_arraw").css({
+                    "margin-top": this._parent.height() / 2 - this._parent.find(".lzy_s_p_arraw").height() / 2
+                });
+                
                 var listSonWidth;
                 try {
                     that._list.niceScroll({cursorcolor: themeColor, autohidemode: "hidden"});

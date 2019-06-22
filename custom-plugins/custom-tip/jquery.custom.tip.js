@@ -194,7 +194,7 @@ I am liangzhenyu
                         that.closeTip();
                     }, 60000);
                 },
-                closeTip: function (tipObj, bgObj) {
+                closeTip: function (tipObj) {
                     var delObj = function (obj, objs) {
                         obj.remove();
                         if (objs) objs.splice(objs.indexOf(obj), 1);

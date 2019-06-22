@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TestPopup</title>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        table {
+            width: 300px;
+            height: 500px;
+            float: left;
+        }
+
+        table tr td:first-child {
+            text-align: right;
+        }
+
+        select {
+            padding: 2px;
+            width: 173px;
+        }
+
+        table tr td:last-child {
+            text-align: left;
+        }
+
+        #div1 {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 900px;
+            height: 700px;
+            background-color: #f3f3f3;
+            z-index: -1;
+            text-align: center;
+            line-height: 700px;
+        }
+
+        #div2 {
+            position: fixed;
+            right: 400px;
+            bottom: 0;
+            width: 600px;
+            height: 400px;
+            background-color: #e7e7e7;
+            z-index: -1;
+            text-align: center;
+            line-height: 400px;
+        }
+    </style>
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v2.0.css">
+    <script src="../js/jquery-1.9.1.min.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v2.0.js"></script>
+
+    <script>
+
+        var mypop;
+
+        $(function () {
+            mypop = $.initPopup(getCfg())
+                .addButton("确定", function () {
+                    alert("点击了确定！");
+                })
+                .addButton("取消", function () {
+                    console.log("点击了取消！");
+                });
+        });
+
+
+        //bug:
+        //1、相对节点时全屏不合理
+        //2、
+
+        function getCfg() {
+            return {
+                content: $("#cont").val(),
+                title: $("#title").val(),
+                width: $("#width").val(),
+                height: $("#height").val(),
+                border: $("#border").val(),
+                borderRadius: $("#radius").val(),
+                themeColor: $("#themeColor").val(),
+                animation: $("#animation").val(),
+                showIcon: $("input[name=showIcon]:checked").val() === "true",
+                vertical: $("input[name=vertical]:checked").val() === "true",
+                icon: $("#icon").val(),
+                allowedFullscreen: $("input[name=isFull]:checked").val() === "true",
+                allowedKeyboard: $("input[name=allowKey]:checked").val() === "true",
+                buttonAlign: $("#buttonAlign").val(),
+                showShadow: $("input[name=showShadow]:checked").val() === "true",
+                shadowSize: $("#shadowSize").val(),
+                showBackground: $("input[name=showBg]:checked").val() === "true",
+                clickBgToClose: $("input[name=clickBgClose]:checked").val() === "true",
+                allowedMove: $("input[name=allowMove]:checked").val() === "true",
+                targetSelector: $("#targetSelector").val(),
+                insideOrFollow: $("#iof").val(),
+                relativePosition: $("#relPos").val(),
+                relativeOffset: parseInt($("#relOft").val())
+            }
+        }
+
+        function showPopup() {
+            var cfg = getCfg();
+            mypop.setStyle(cfg, true).showPopup();
+        }
+
+    </script>
+</head>
+<body>
+<table>
+    <tbody>
+    <tr>
+        <td>内容：</td>
+        <td><input id="cont" value="这里是内容"/></td>
+    </tr>
+    <tr>
+        <td>标题：</td>
+        <td><input id="title" value="测试"/></td>
+    </tr>
+    <tr>
+        <td>宽：</td>
+        <td><input id="width" value="500px" placeholder="支持百分比"/></td>
+    </tr>
+    <tr>
+        <td>高：</td>
+        <td><input id="height" value="250px" placeholder="支持百分比"/></td>
+    </tr>
+    <tr>
+        <td>内容居中：</td>
+        <td>
+            <input type="radio" value="true" name="vertical" id="v_true" checked/>
+            <label for="v_true">是</label>
+            <input type="radio" value="false" name="vertical" id="v_false"/>
+            <label for="v_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>边框：</td>
+        <td><input id="border" value="1px solid"/></td>
+    </tr>
+    <tr>
+        <td>圆角：</td>
+        <td><input id="radius" value="0"/></td>
+    </tr>
+    <tr>
+        <td>主题颜色：</td>
+        <td><input id="themeColor" value="#358aff"/></td>
+    </tr>
+    <tr>
+        <td>动画风格：</td>
+        <td>
+            <select id="animation" title="动画风格">
+                <option value="1">1:弹出风格</option>
+                <option value="2">2:收缩风格</option>
+                <option value="3">3:旋转风格</option>
+                <option value="4">4:下滑风格</option>
+                <option value="5">5:下滑风格</option>
+                <option value="6">6:抖动风格</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>显示阴影：</td>
+        <td>
+            <input type="radio" value="true" name="showShadow" id="s_true" checked/>
+            <label for="s_true">是</label>
+            <input type="radio" value="false" name="showShadow" id="s_false"/>
+            <label for="s_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>阴影大小：</td>
+        <td><input id="shadowSize" value="10"/></td>
+    </tr>
+    <tr>
+        <td>显示图标：</td>
+        <td>
+            <input type="radio" value="true" name="showIcon" id="i_true" checked/>
+            <label for="i_true">是</label>
+            <input type="radio" value="false" name="showIcon" id="i_false"/>
+            <label for="i_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>图标：</td>
+        <td><input id="icon" value="?" placeholder="字符串，base64图片或路径"/></td>
+    </tr>
+    <tr>
+        <td>是否全屏：</td>
+        <td>
+            <input type="radio" value="true" name="isFull" id="f_true" checked/>
+            <label for="f_true">是</label>
+            <input type="radio" value="false" name="isFull" id="f_false"/>
+            <label for="f_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>键盘事件：</td>
+        <td>
+            <input type="radio" value="true" name="allowKey" id="k_true" checked/>
+            <label for="k_true">是</label>
+            <input type="radio" value="false" name="allowKey" id="k_false"/>
+            <label for="k_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>按键对齐：</td>
+        <td>
+            <select id="buttonAlign" title="动画风格">
+                <option value="center">center:居中对齐</option>
+                <option value="left">left:左边对齐</option>
+                <option value="right" selected>right:右边对齐</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>显示背景：</td>
+        <td>
+            <input type="radio" value="true" name="showBg" id="b_true" checked/>
+            <label for="b_true">是</label>
+            <input type="radio" value="false" name="showBg" id="b_false"/>
+            <label for="b_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>背景事件：</td>
+        <td>
+            <input type="radio" value="true" name="clickBgClose" id="cb_true" checked/>
+            <label for="cb_true">是</label>
+            <input type="radio" value="false" name="clickBgClose" id="cb_false"/>
+            <label for="cb_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>允许移动：</td>
+        <td>
+            <input type="radio" value="true" name="allowMove" id="m_true" checked/>
+            <label for="m_true">是</label>
+            <input type="radio" value="false" name="allowMove" id="m_false"/>
+            <label for="m_false">否</label>
+        </td>
+    </tr>
+    <tr>
+        <td>参照目标：</td>
+        <td>
+            <select id="targetSelector" title="参照目标">
+                <option value="window">window</option>
+                <option value="#test">#test(测试按键)</option>
+                <option value="#div1">#div1</option>
+                <option value="#div2">#div2</option>
+            </select>
+            <script>
+                $("#targetSelector").on("change", function (e) {
+                    var $iof = $("#iof");
+                    if ($(this).val() == "window") {
+                        $iof.find("option[value=follow]").prop("disabled", true);
+                        $iof.val("inside");
+                    } else {
+                        $iof.find("option[value=follow]").prop("disabled", false);
+                    }
+                });
+            </script>
+        </td>
+    </tr>
+    <tr>
+        <td>弹框类型：</td>
+        <td>
+            <select id="iof" title="弹框类型">
+                <option value="inside">inside:内嵌</option>
+                <option value="follow" disabled>follow:跟随</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>相对位置：</td>
+        <td>
+            <select id="relPos" title="相对位置">
+                <option value="center">center</option>
+                <option value="top">top</option>
+                <option value="left">left</option>
+                <option value="right">right</option>
+                <option value="bottom">bottom</option>
+                <option value="topleft">top left</option>
+                <option value="topright">top right</option>
+                <option value="bottomleft">bottom left</option>
+                <option value="bottomright">bottom right</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>相对偏移：</td>
+        <td><input id="relOft" value="5"/></td>
+    </tr>
+    </tbody>
+</table>
+
+
+<button onclick="showPopup();" id="test" style="float: left;margin: 580px 300px 0 0;">测试</button>
+
+<a href="javascript:;" onclick="window.history.back(-1);"
+   style="position: absolute;left: 5px;bottom: 5px;cursor: pointer;">返回</a>
+<div id="div1">
+    我的ID:div1
+</div>
+<div id="div2">
+    我的ID:div2
+</div>
+</body>
+</html>

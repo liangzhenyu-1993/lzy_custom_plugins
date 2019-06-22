@@ -20,12 +20,12 @@
             position: fixed;
             left: 10px;
             bottom: 10px;
-            width: 200px;
+            width: 330px;
             height: 26px;
         }
 
         #border_shadow_btn > button {
-            width: 50%;
+            width: 33.33%;
             height: 100%;
             float: left;
         }
@@ -55,9 +55,9 @@
             z-index: -1;
         }
     </style>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v1.3.5.min.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v2.0.css">
     <script src="../js/jquery-1.9.1.min.js"></script>
-    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v1.3.5.min.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v2.0.js"></script>
 
     <script>
 
@@ -114,12 +114,12 @@
                     alert("点击了确定");
                 }).addButton("取消");
             //------------------------------------------------------------
-            mypops[8] = $.initPopup({isShowBg: true})
+            mypops[8] = $.initPopup({showBackground: true})
                 .addButton("确定", function () {
                     alert("点击了确定");
                 }).addButton("取消");
             //------------------------------------------------------------
-            mypops[9] = $.initPopup({isShowIcon: false})
+            mypops[9] = $.initPopup({showIcon: false})
                 .addButton("确定", function () {
                     alert("点击了确定");
                 }).addButton("取消");
@@ -294,15 +294,13 @@
                     alert("点击了确定");
                 }).addButton("取消");
             //------------------------------------------------------------
-            mypops[36] = $.initPopup()
-                .addButton("确定", function () {
-                    alert("点击了确定");
-                }).addButton("取消");
-            $("#themeStyle").on("change", function () {
-                mypops[36].closePopup().setStyle({
-                    themeStyle: $(this).val()
-                })
-            });
+            mypops[36] = $.initPopup({
+                width: '50%',
+                height: '50%',
+                showBackground: true
+            }).addButton("确定", function () {
+                alert("点击了确定");
+            }).addButton("取消");
             //------------------------------------------------------------
             mypops[37] = $.initPopup({
                 insideOrFollow: "inside",//它的默认targetSelector是body
@@ -336,16 +334,18 @@
             });
             //------------------------------------------------------------
             mypops[40] = $.initPopup({
+                width: '50%',
+                height: '50%',
                 targetSelector: '#referContainer1',
-                isShowBg: true,
-                isClickBgClose: false
+                showBackground: true,
+                clickBgToClose: false
             }).addButton("确定", function () {
                 alert("点击了确定");
             }).addButton("取消");
             //------------------------------------------------------------
             mypops[41] = $.initPopup({
                 targetSelector: '#referContainer2',
-                isShowBg: true,
+                showBackground: true,
                 relativePosition: "left bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
@@ -354,11 +354,14 @@
             //---------------------------/--------------------------------/--------------------------------
             $("#border_shadow_btn").on("click", "button", function () {
                 $(this).addClass("blur").siblings().removeClass("blur");
-                var flag = $(this).index() === 0;
-                for (var i = 0; i < mypops.length; i++) {
-                    mypops[i].setStyle({
-                        isShowShadow: flag
-                    });
+                var idx = $(this).index();
+                if (idx == 2) {
+                    window.location.href = "TestPopup2.html";
+                } else {
+                    var flag = $(this).index() === 0;
+                    for (var i = 0; i < mypops.length; i++) {
+                        mypops[i].setStyle({showShadow: flag});
+                    }
                 }
             });
         });
@@ -472,10 +475,6 @@
         <td><input type="button" id="btn34" value="节点作内容3" onclick="showPopup(34);"></td>
         <td><input type="button" id="btn35" value="放大全屏" onclick="showPopup(35,'放大全屏功能是一位热心网友建议，感谢这位网友！');"></td>
         <td>
-            <select id="themeStyle">
-                <option value="default">默认</option>
-                <option value="dimnav">淡色</option>
-            </select>
             <input type="button" id="btn36" value="弹框风格" onclick="showPopup(36,'弹框风格');">
         </td>
         <td colspan="2">
@@ -502,23 +501,27 @@
     <tr>
         <td><input type="button" id="btn39" value="多重弹框" onclick="showPopup(39,'打开我的子弹框');"></td>
         <td><input type="button" id="btn40" value="相对定位1" onclick="showPopup(40,'其他的非跟随状态的弹框都是相对于屏幕的绝对定位');"></td>
-        <td><input type="button" id="btn41" value="相对定位2" onclick="showPopup(41,'其他的非跟随状态的弹框都是相对于屏幕的绝对定位');"></td>
+        <td><input type="button" id="btn41" value="相对定位2" onclick="showPopup(41,'其他的非跟随状态的弹框都是相对于屏幕的绝对定位');">
+        </td>
     </tr>
     </tbody>
 </table>
 
 <div class="content">
     我的选择器是 类：content
-    <h1>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h1>
+    <h3>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h3>
 </div>
 <div id="content">
     我的选择器是 ID：content
-    <h1>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h1>
+    <h3>内容是可以自定义样式的，只是弹框把这部分节点嵌到弹框里而已</h3>
+    <a href="javasricpt:;" onclick="showPopup(25,'弹框内按键点击弹出弹框')">点击</a>
 </div>
 <div id="border_shadow_btn">
     <button class="blur">添加边框阴影</button>
     <button style="margin-left: -2px;">移除边框阴影</button>
+    <button style="margin-left: -2px;">自定义测试页面</button>
 </div>
+
 <div id="referContainer1"></div>
 <div id="referContainer2"></div>
 </body>
