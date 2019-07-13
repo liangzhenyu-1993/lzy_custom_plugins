@@ -3,24 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>testSelect3</title>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-select/custom.select-v1.2.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-select/custom.select-v2.0.css">
     <style>
-        #city {
-            float: left;
-            width: 120px;
-            height: 30px;
-            margin-left: 10px;
-            /*margin-top: 800px;*/
-            padding: 5px;
-            box-shadow: 1px 1px 2px #1d82fe;
-            /*border-radius: 5px;*/
-            border: 1px solid #1d82fe;
-            color: #1d82fe;
-            /*background-color: skyblue;*/
-        }
 
         input {
-            float: left;
+            /*float: left;*/
             margin-left: 10px;
         }
 
@@ -35,13 +22,13 @@
     </style>
     <!--<script src="../js/jquery-1.9.1.min.js"></script>-->
     <script src="../js/jQuery v1.10.2.js"></script>
-    <script src="../custom-plugins/custom-select/jquery.custom.select-v1.2.js"></script>
+    <script src="../custom-plugins/custom-select/jquery.custom.select-v2.0.js"></script>
     <script src="../custom-plugins/custom-select/jquery-nicescroll.js"></script>
     <script type="text/javascript">
 
         var diySelect;
         $(function () {
-            diySelect = $.initSelect("#city", true, function () {
+            diySelect = $.initSelect("#city", function () {
                 //api 的change事件
                 $("#text_cont").append("API方式：" + this.getSelected() + "\n");
                 $("#text_cont").append("API方式(name属性)：" + diySelect.getSelected('name') + "\n");
@@ -53,9 +40,10 @@
         });
 
         function check() {
-            $("#text_cont").append("API方式：" + diySelect.getSelected() + "\n");
-            $("#text_cont").append("API方式(name属性)：" + diySelect.getSelected('name') + "\n");
-            $("#text_cont").append("原始方式：" + $("#city").val() + "\n");
+            diySelect.render();
+//            $("#text_cont").append("API方式：" + diySelect.getSelected() + "\n");
+//            $("#text_cont").append("API方式(name属性)：" + diySelect.getSelected('name') + "\n");
+//            $("#text_cont").append("原始方式：" + $("#city").val() + "\n");
         }
 
         function add1() {
@@ -120,5 +108,7 @@
 
 <br/>
 <textarea id="text_cont"></textarea>
+
+
 </body>
 </html>
