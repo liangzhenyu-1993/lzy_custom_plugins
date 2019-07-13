@@ -76,6 +76,7 @@
     但为了保持美观，编写一个弹框使用一个大 DIV 包括
  */
 ;(function ($, window, document, undefined) {
+    "use strict";
     $.extend({
         initPopup: function (cfg) {
             /**
@@ -505,7 +506,7 @@
                     //是否允许键盘事件
                     if (this.global.once === 1) {
                         $(document).on("keyup", function (event) {
-                            var e = event || window.event || arguments.callee.caller.arguments[0];
+                            var e = event || window.event;
                             if (e && e.keyCode === 27) {
                                 if (that.cfg.allowedKeyboard) that.closePopup();
                             }

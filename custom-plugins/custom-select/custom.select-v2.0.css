@@ -1,0 +1,145 @@
+.lzy_select {
+    width: 200px;
+    height: 30px;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+}
+
+.lzy_select_parent {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    user-select: none;
+
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-image: initial;
+    border-radius: 3px;
+}
+
+.lzy_select_span {
+    display: block;
+    line-height: 28px;
+    padding-left: 8px;
+    padding-right: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.lzy_select_arraw {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 4px;
+    right: 1px;
+}
+
+.lzy_select_arraw_open {
+    transform: rotate(180deg);
+    animation: arraw_open .3s;
+}
+
+@keyframes arraw_open {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+.lzy_select_arraw_close {
+    transform: rotate(0deg);
+    animation: arraw_close .3s;
+}
+
+@keyframes arraw_close {
+    0% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+.lzy_select_arraw b {
+    width: 0;
+    height: 0;
+    left: 50%;
+    top: 50%;
+    margin-left: -6px;
+    margin-top: -3px;
+    position: absolute;
+    border-style: solid;
+    border-color: transparent transparent rgb(136, 136, 136);
+    border-width: 0 6px 6px;
+}
+
+.lzy_select_list {
+    position: absolute;
+    min-width: 100%;
+    max-height: 300px;
+    margin-top: 2px;
+    box-sizing: border-box;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-image: initial;
+    border-radius: 3px;
+    z-index: 999;
+    display: none;
+}
+
+.lzy_select_search {
+    display: block;
+    padding: 4px;
+}
+
+.lzy_select_search input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px;
+    margin: 0;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-image: initial;
+}
+
+.lzy_select_ul {
+    padding: 4px;
+
+}
+
+.lzy_select_ul ul {
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lzy_select_ul ul li {
+    user-select: none;
+    padding: 6px;
+    list-style: none;
+}
+
+.lzy_select_ul ul li:hover {
+    color: white;
+    background-color: deepskyblue;
+}
+
+.lzy_select_ul ul .hover {
+    color: white;
+    background-color: #333;
+}

@@ -1,0 +1,82 @@
+.lzy_prefetch_content {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid #8392af;
+    border-image: initial;
+    border-radius: 3px;
+    z-index: 999;
+    display: none;
+}
+
+.lzy_prefetch_list {
+    padding: 3px;
+
+}
+
+.lzy_prefetch_list ul {
+    max-height: 300px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lzy_prefetch_list ul li {
+    user-select: none;
+    padding: 3px;
+    list-style: none;
+    display: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.lzy_fontsize_12 li {
+    font-size: 12px;
+}
+
+.lzy_fontsize_13 li {
+    font-size: 13px;
+}
+
+.lzy_fontsize_14 li {
+    font-size: 14px;
+}
+
+.lzy_fontsize_15 li {
+    font-size: 15px;
+}
+
+.lzy_fontsize_16 li {
+    font-size: 16px;
+}
+
+.lzy_fontsize_17 li {
+    font-size: 17px;
+}
+
+.lzy_fontsize_18 li {
+    font-size: 18px;
+}
+
+.lzy_fontsize_19 li {
+    font-size: 19px;
+}
+
+.lzy_fontsize_20 li {
+    font-size: 20px;
+}
+
+.lzy_prefetch_list ul li:hover,
+.lzy_prefetch_list ul li.selected {
+    color: white;
+    background-color: #1e90ff;
+}
+
+.lzy_prefetch_list ul li.show {
+    display: list-item;
+}
+
+.lzy_input_focus {
+    border: 1px solid #1e90ff;
+    box-shadow: 0 0 5px rgba(12, 117, 222, 1);
+}

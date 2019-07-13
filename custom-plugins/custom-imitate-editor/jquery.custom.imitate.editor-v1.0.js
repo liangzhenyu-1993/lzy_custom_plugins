@@ -14,6 +14,7 @@
     2.$(selector).initTextarea();//编辑框的样式是根据textarea的样式获取，所以textarea的样式根据自己所需而配置
  */
 ;(function ($, window, document, undefined) {
+    "use strict";
     var ImitateEditor = function (ele) {
         var rW = 35;
         this.$textarea = $(ele).attr({"wrap": "off"});
@@ -236,14 +237,17 @@
         }
     };
 
-    $.fn.initTextarea = function () {
-        this.each(function () {
-            var $this = $(this), imitateEditor = $this.data('lzyTextarea');
-            if (!imitateEditor) {
-                imitateEditor = new ImitateEditor($this);
-                $this.data('lzyTextarea', imitateEditor);
-            }
-            imitateEditor.initEvent();
-        });
-    }
+    $.fn.extend({
+        initTextarea: function (options) {
+            this.each(function () {
+                var $this = $(this), imitateEditor = $this.data('lzyTextarea');
+                if (!imitateEditor) {
+                    imitateEditor = new ImitateEditor($this);
+                    $this.data('lzyTextarea', imitateEditor);
+                }
+                imitateEditor.initEvent();
+            });
+        }
+    });
+
 })(jQuery, window, document);
