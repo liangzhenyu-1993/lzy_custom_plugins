@@ -15,9 +15,12 @@
     });
 
     $.Prefetch = function (input, options) {
+        //列表对象，输入框对象，标识是否第一次调用当前方法
         var $content, $input = $(input), flag = true;
 
         if (!$input.parent().hasClass("lzy_prefetch_parent")) {
+            //第一次进入
+            //修饰input组件
             var $parent = $("<span style='width: auto;height: auto;position: relative;' ></span>")
                 .css({
                     float: $input.css("float"),
@@ -26,6 +29,7 @@
                 .addClass("lzy_prefetch_parent")
                 .insertAfter($input)
                 .append($input);
+            //生成列表集合添加到下拉列表
             $content = $("<div class=\"lzy_prefetch_content\"></div>")
                 .append("<div class=\"lzy_prefetch_list\" data-attrs=\"\"><ul class=\"lzy_prefetch_ul\"></ul></div>")
                 .css({
@@ -35,37 +39,41 @@
                 })
                 .appendTo($parent);
         } else {
+            //第二次以后进入
             $content = $input.next();
             flag = false;
         }
 
-        var data = options.data;
-        if (data.length) {
+        if (options.data && options.data.length) {
+            var data = options.data;
             $content.find("ul").empty();
-            if (typeof data[0] == "string") {
-                $.each(data, function (index, item) {
-                    $content.find("ul").append("<li>" + item + "</li>");
-                });
+            var lis = "", i = 0;
+            if (typeof data[0] === "string") {
+                //数据的值是 string 类型，添加列表节点
+                for (i = 0; i < data.length; i++) {
+                    lis += "<li>" + data[i] + "</li>";
+                }
             } else {
+                //数据的值是 json 对象类型
                 var arrAttr = Object.keys(data[0]);
-                var attrs = arrAttr.join(",").replace("value", "").replace(/,,/g, ",");
-                $content.find("div").data("attrs", attrs);
+                $content.find("div").data("attrs", arrAttr.join(","));//配置当前列表的属性值的名称有
 
-                $.each(data, function (index, item) {
-                    var $li = $("<li></li>");
-                    for (var i = 0; i < arrAttr.length; i++) {
-                        if (arrAttr[i] == "value") {
-                            $li.html(item[arrAttr[i]]);
+                for (i = 0; i < data.length; i++) {
+                    var li = "<li", val = "";
+                    for (var j = 0; j < arrAttr.length; j++) {
+                        if (arrAttr[j] === "value") {
+                            val = ">" + data[i][arrAttr[j]] + "</li>";//添加值
                         } else {
-                            $li.attr(arrAttr[i], item[arrAttr[i]]);
+                            li += " " + arrAttr[j] + "='" + data[i][arrAttr[j]] + "' ";//添加属性
                         }
                     }
-                    $content.find("ul").append($li);
-                });
+                    lis += li + val;
+                }
             }
+            $content.find("ul").append(lis);
         }
 
-        var inContent, timeout, KEY = {
+        var isMouseInCont, timeout, KEY = {
             UP: 38,
             DOWN: 40,
             DEL: 46,
@@ -78,38 +86,84 @@
             BACKSPACE: 8
         };
 
-        var setList = function ($content, $input) {
-            clearTimeout(timeout);
-            timeout = setTimeout(function () {
-                var val = $input.val();
-                if (!val || !val.length) {
-                    $content.hide();
-                    return false;
-                }
-                $content.show();
-                var $lis = $content.find("li").removeClass("show selected");
-                var cnt = 0;
-                for (var i = 0; i < $lis.length; i++) {
-                    if ($lis.eq(i).text().indexOf(val) >= 0) {
-                        $lis.eq(i).addClass("show");
-                        cnt++;
-                    }
-                }
-                if (!cnt) $content.hide();
-            }, 300);
+        var hide = function () {
+            $input.removeClass("lzy_input_focus");
+            $content.hide();
         };
-
-        var setInput = function ($li, $content, $input) {
-            if (!$li[0]) return;
-            var text = $li.text();
-            $input.val(text);
-
+        /**
+         * 移除输入框属性
+         * @param $content 列表对象
+         * @param $input 输入框对象
+         */
+        var removeInputAttr = function ($content, $input) {
             var attrs = $content.find("div").data("attrs").split(",");
             if (attrs && attrs.length) {
                 for (var i = 0; i < attrs.length; i++) {
+                    if (attrs[i] === "value") continue;
+                    $input.removeAttr(attrs[i]);
+                }
+            }
+        };
+
+        /**
+         * 设置输入框的属性
+         * @param $li 选择的列对象
+         * @param $content 列表对象
+         * @param $input 输入框对象
+         */
+        var setInputAttr = function ($li, $content, $input) {
+            var attrs = $content.find("div").data("attrs").split(",");
+            if (attrs && attrs.length) {
+                for (var i = 0; i < attrs.length; i++) {
+                    if (attrs[i] === "value") continue;
                     $input.attr(attrs[i], $li.attr(attrs[i]));
                 }
             }
+            $input.trigger("change");
+        };
+
+        /**
+         * 设置输入框的值
+         * @param $li 选择的列对象
+         * @param $content 列表对象
+         * @param $input 输入框对象
+         */
+        var setInput = function ($li, $content, $input) {
+            if (!$li[0]) return;
+            $input.val($li.text());
+
+            setInputAttr($li, $content, $input);
+        };
+
+        /**
+         * 渲染列表
+         * @param $content 列表对象
+         * @param $input 输入框对象
+         */
+        var setList = function ($content, $input) {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                removeInputAttr($content, $input);
+                var val = $input.val();
+                // if (!val || !val.length) {
+                //     $content.hide();
+                //     return false;
+                // }
+                $content.show();//列表显示
+                var $lis = $content.find("li").removeClass("show selected");
+                var cnt = 0;
+                for (var i = 0; i < $lis.length; i++) {
+                    var text = $lis.eq(i).text();
+                    if (text.indexOf(val) >= 0) {
+                        $lis.eq(i).addClass("show");
+                        cnt++;
+                        if (text === val) {
+                            setInputAttr($lis.eq(i), $content, $input);
+                        }
+                    }
+                }
+                if (!cnt) hide();
+            }, 300);
         };
 
         var setSelected = function (type, $content, $input) {
@@ -165,71 +219,76 @@
         };
 
         if (flag) {
-            $content.hover(function (e) {
-                inContent = true;
-            }, function (e) {
-                inContent = false;
+            $content.hover(function () {
+                isMouseInCont = true;
+            }, function () {
+                isMouseInCont = false;
             }).find("div")
                 .css({
                     paddingLeft: $input.css("paddingLeft") - 3
                 })
                 .addClass("lzy_fontsize_" + parseInt($input.css("font-size")))
                 .find("ul")
-                .on("mouseup", "li", function () {
+                .on("mouseup", "li", function (e) {
+                    e.stopPropagation();
                     setInput($(this), $content, $input);
                     $content.hide();
                 });
 
 
-            $input.on("keydown", function (event) {
-                switch (event.keyCode) {
+            $input.on("keyup", function (e) {
+                e.stopPropagation();
+                switch (e.keyCode) {
                     case KEY.UP:
                         if ($content.is(":visible")) {
-                            event.preventDefault();
+                            e.preventDefault();
                             setSelected("up", $content, $input);
                         }
                         break;
                     case KEY.DOWN:
                         if ($content.is(":visible")) {
-                            event.preventDefault();
+                            e.preventDefault();
                             setSelected("down", $content, $input);
                         }
                         break;
                     case KEY.PAGEUP:
                         if ($content.is(":visible")) {
-                            event.preventDefault();
+                            e.preventDefault();
                             setSelected("pageup", $content, $input)
                         }
                         break;
                     case KEY.PAGEDOWN:
                         if ($content.is(":visible")) {
-                            event.preventDefault();
+                            e.preventDefault();
                             setSelected("pagedown", $content, $input);
                         }
                         break;
                     case KEY.ENTER:
                         if ($content.is(":visible")) {
-                            event.preventDefault();
+                            e.preventDefault();
                             setInput($content.find(".selected"), $content, $input);
                             $content.hide();
                         }
                         break;
                     case KEY.ESC:
-                        $content.hide();
+                        hide();
                         break;
                     default:
                         setList($content, $input);
                         break;
                 }
             }).on("blur", function () {
-                if (!inContent) {
+                if (!isMouseInCont) {
                     $content.hide();
                 }
-            }).on("focus", function () {
+            }).on("focus click", function (e) {
+                e.stopPropagation();
                 setList($content, $input);
             });
         }
 
+
+        $(document).off('click', hide).on('click', hide); //点击其它元素关闭 select
     };
 
 })(jQuery, window, document);

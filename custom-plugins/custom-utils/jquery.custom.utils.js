@@ -172,9 +172,9 @@
                     throw new Error("输入的日期和格式不对应！");
                 }
                 var get = function (sub) {
-                    if (format.indexOf(sub) < 0) return 0;
+                    if (format.indexOf(sub) < 0) return 1;
                     var sTime = datetime.substr(format.indexOf(sub), sub.length);
-                    return parseInt(!sTime || sTime.length === 0 ? 0 : sTime);
+                    return parseInt(!sTime || sTime.length === 0 ? 1 : sTime);
                 };
 
                 var year = get("yyyy"),
@@ -255,7 +255,7 @@
          * @returns {*}
          */
         this.getTime = function (num, type, time, format, objType) {
-            num = isNaN(num) ? 0 : parseInt(num);
+            num = !num || isNaN(num) ? 0 : parseInt(num);
             var date = __processDatetime(time, this.__format);
             if (type) type = type.toLowerCase();
             if (type === "month" || type === 1) {

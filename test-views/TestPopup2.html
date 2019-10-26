@@ -68,19 +68,14 @@
         var mypop;
 
         $(function () {
-            mypop = $.initPopup(getCfg())
-                .addButton("确定", function () {
-                    alert("点击了确定！");
-                })
-                .addButton("取消", function () {
-                    console.log("点击了取消！");
-                });
+            mypop = $.initPopup(getCfg()).addButton("关闭", function (e) {
+                console.log("点击了关闭！");
+                this.closePopup();
+            }).on("open afterclose", function () {
+                console.log(this.getStatus());
+            });
+
         });
-
-
-        //bug:
-        //1、相对节点时全屏不合理
-        //2、
 
         function getCfg() {
             return {
@@ -106,13 +101,20 @@
                 targetSelector: $("#targetSelector").val(),
                 insideOrFollow: $("#iof").val(),
                 relativePosition: $("#relPos").val(),
-                relativeOffset: parseInt($("#relOft").val())
+                relativeOffset: parseInt($("#relOft").val()),
+                buttons: [{
+                    name: "确定",
+                    click: function (e) {
+                        console.log(this);
+                    }
+                }]
             }
         }
 
         function showPopup() {
             var cfg = getCfg();
             mypop.setStyle(cfg, true).showPopup();
+
         }
 
     </script>
@@ -165,7 +167,7 @@
                 <option value="2">2:收缩风格</option>
                 <option value="3">3:旋转风格</option>
                 <option value="4">4:下滑风格</option>
-                <option value="5">5:下滑风格</option>
+                <option value="5">5:上滑风格</option>
                 <option value="6">6:抖动风格</option>
             </select>
         </td>
