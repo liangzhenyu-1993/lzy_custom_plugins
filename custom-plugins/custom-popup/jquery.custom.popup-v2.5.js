@@ -5,7 +5,7 @@
 */
 
 /*
-插件-弹框提示-v1.3.5(可以展示大内容，也可以是确认框)
+插件-弹框提示-v2.5(可以展示大内容，也可以是确认框)
 使用方法说明：
     1.此插件基于jQuery编写，使用时需要先导入jQuery
     2.获取对象
@@ -37,7 +37,7 @@
         }
     9.弹框开启关闭回调事件
         myPop.on(type,callback);
-        type:"open"开启，"close"关闭两种类型，按照jquery的on方法使用习惯配置便可
+        type:"afteropen","beforeopen","afterclose"和"beforeclose";按照jquery的on方法使用习惯配置便可
         callback:回调函数
  参数说明：
     cfg:{
@@ -746,18 +746,19 @@
                     var self = this,
                         $footer = self._$footer,
                         className = self._global.className;
-                    var $curBtn = $("<button class='" + className.fb + "'>" + btnName + "</button>").appendTo($footer)
+                    var $curBtn = $("<button class='" + className.fb + "'>" + btnName + "</button>")
+                        .appendTo($footer)
                         .on("click", function (e) {
                             if (callback && typeof(callback) === "function") callback.call(self, e);
                         });
                     if (btnName && (btnName.indexOf("关") >= 0 || btnName.indexOf("消") >= 0)) $curBtn.addClass(className.fbc);
-                    var size = 0, btns = $footer.find(className._fb);
+                    var size = 0, $btns = $footer.find(className._fb);
                     var getMargin = function ($obj, margin) {
                         return parseFloat($obj.css(margin).replace("px", ""));
                     };
-                    for (var i = 0; i < btns.length; i++) {
-                        var tempSize = btns.eq(i).text().length <= 2 ? 38 : btns.eq(i).text().length * 16;
-                        size += tempSize + 22 + getMargin(btns.eq(i), "margin-right") + getMargin(btns.eq(i), "margin-left");
+                    for (var i = 0; i < $btns.length; i++) {
+                        var tempSize = $btns.eq(i).text().length <= 2 ? 38 : $btns.eq(i).text().length * 16;
+                        size += tempSize + 22 + getMargin($btns.eq(i), "margin-right") + getMargin($btns.eq(i), "margin-left");
                     }
                     if (size > self._$popup.width()) self.setStyle({width: size + 20});//添加的按键过多，导致总长超过弹框的宽时便设置弹框的宽足与容纳按键
                     return self;
@@ -771,9 +772,9 @@
                         className = self._global.className;
                     if (isNaN(nameOrIndex)) {
                         //非数字即按名称判断按键
-                        var btns = $footer.find(className._fb);
-                        for (var i = btns.length - 1; i >= 0; i--) {
-                            if (btns.eq(i).text() === nameOrIndex) btns.eq(i).remove();
+                        var $btns = $footer.find(className._fb);
+                        for (var i = $btns.length - 1; i >= 0; i--) {
+                            if ($btns.eq(i).text() === nameOrIndex) $btns.eq(i).remove();
                         }
                     } else {
                         $footer.find(className._fb).eq(nameOrIndex).remove();

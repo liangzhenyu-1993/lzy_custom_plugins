@@ -55,9 +55,9 @@
             z-index: -1;
         }
     </style>
-    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v2.0.css">
+    <link type="text/css" rel="stylesheet" href="../custom-plugins/custom-popup/custom.popup-v2.5.css">
     <script src="../js/jquery-1.9.1.min.js"></script>
-    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v2.0.js"></script>
+    <script src="../custom-plugins/custom-popup/jquery.custom.popup-v2.5.js"></script>
 
     <script>
 
@@ -75,14 +75,18 @@
             mypops[2] = $.initPopup()
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[3] = $.initPopup()
                 .addButton("确定", function () {
                     alert("点击了确定");
                 }).addButton("跳转", function () {
                     window.open("http://www.baidu.com")
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[4] = $.initPopup()
                 .addButton("确定", function () {
@@ -91,7 +95,9 @@
                     window.open("http://www.baidu.com");
                 }).addButton("干啥", function () {
                     alert("自定义，想干啥就干啥");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[5] = $.initPopup()
                 .addButton("确定", function () {
@@ -102,56 +108,78 @@
                     alert("自定义，想干啥就干啥");
                 }).addButton("一个长一点的名称", function () {
                     alert("名称长一点，也是OK的");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[6] = $.initPopup({borderRadius: 0})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[7] = $.initPopup({themeColor: $("#colors").find("option:selected").val()})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[8] = $.initPopup({showBackground: true})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[9] = $.initPopup({showIcon: false})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[10] = $.initPopup({icon: myIcon})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[11] = $.initPopup({buttonAlign: "left"})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[12] = $.initPopup({buttonAlign: "center"})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[13] = $.initPopup({buttonAlign: "right"})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[14] = $.initPopup({allowedMove: true})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[15] = $.initPopup().addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[16] = $.initPopup({
                 targetSelector: "#btn16",
@@ -159,7 +187,9 @@
                 relativePosition: "top"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[17] = $.initPopup({
                 targetSelector: "#btn17",
@@ -167,7 +197,9 @@
                 relativePosition: "top right"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[18] = $.initPopup({
                 targetSelector: "#btn18",
@@ -175,7 +207,9 @@
                 relativePosition: "right"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[19] = $.initPopup({
                 targetSelector: "#btn19",
@@ -183,7 +217,9 @@
                 relativePosition: "right bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[20] = $.initPopup({
                 targetSelector: "#btn20",
@@ -191,7 +227,9 @@
                 relativePosition: "bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[21] = $.initPopup({
                 targetSelector: "#btn21",
@@ -199,7 +237,9 @@
                 relativePosition: "bottom left"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[22] = $.initPopup({
                 targetSelector: "#btn22",
@@ -207,7 +247,9 @@
                 relativePosition: "left"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[23] = $.initPopup({
                 targetSelector: "#btn23",
@@ -215,84 +257,110 @@
                 relativePosition: "left top"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[24] = $.initPopup({
                 insideOrFollow: "inside",//它的默认targetSelector是body
                 relativePosition: "left"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[25] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "top left"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[26] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "left bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[27] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "top"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[28] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[29] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "bottom right"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[30] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "right top"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[31] = $.initPopup({
                 insideOrFollow: "inside",
                 relativePosition: "right"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[32] = $.initPopup({content: ".content"})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[33] = $.initPopup({content: "#content"})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[34] = $.initPopup({
                 content: "<span style='font-size: 18px;'>内容可以是节点，一般我用于设置字体大小；弹框内容部分是强制水平和垂直居中的，所以添加任何东西都可以</span>"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[35] = $.initPopup({allowedFullscreen: true})
                 .addButton("确定", function () {
                     alert("点击了确定");
-                }).addButton("取消");
+                }).addButton("取消", function () {
+                    this.closePopup();
+                });
             //------------------------------------------------------------
             mypops[36] = $.initPopup({
                 width: '50%',
@@ -300,19 +368,25 @@
                 showBackground: true
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[37] = $.initPopup({
                 insideOrFollow: "inside",//它的默认targetSelector是body
                 relativePosition: "10px 10px"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
 
             //------------------------------------------------------------
             mypops[38] = $.initPopup().addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             $("#animation").on("change", function () {
                 mypops[38].closePopup().setStyle({
                     animation: $(this).val()
@@ -329,7 +403,9 @@
                 sonOfpop39.setStyle({
                     relativePosition: (status.rect.left + status.rect.width) + "," + status.rect.top
                 }).showPopup("我是子弹框");
-            }).addButton("取消").on("close", function () {
+            }).addButton("取消", function () {
+                this.closePopup();
+            }).on("close", function () {
                 sonOfpop39.closePopup();
             });
             //------------------------------------------------------------
@@ -341,7 +417,9 @@
                 clickBgToClose: false
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
             //------------------------------------------------------------
             mypops[41] = $.initPopup({
                 targetSelector: '#referContainer2',
@@ -349,7 +427,9 @@
                 relativePosition: "left bottom"
             }).addButton("确定", function () {
                 alert("点击了确定");
-            }).addButton("取消");
+            }).addButton("取消", function () {
+                this.closePopup();
+            });
 
             //---------------------------/--------------------------------/--------------------------------
             $("#border_shadow_btn").on("click", "button", function () {

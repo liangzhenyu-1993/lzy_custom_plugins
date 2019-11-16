@@ -87,17 +87,9 @@
     fill: rgba(0, 0, 0, 0);
 }
 
-.lzy_nav_close:hover:before,
-.lzy_nav_full:hover:before {
-    position: absolute;
-    top: 0;
-    left: 0;
-    content: "";
-    z-index: 1;
-    display: inline-block;
-    background-color: rgba(99, 99, 99, .15);
-    width: 100%;
-    height: 100%;
+.lzy_nav_close:hover,
+.lzy_nav_full:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 .lzy_popup_cont {
@@ -154,16 +146,13 @@
     padding: 0 10px;
 }
 
-.lzy_footer_btn:hover:before {
-    position: absolute;
-    top: 0;
-    left: 0;
-    content: "";
-    z-index: 1;
-    display: inline-block;
-    background-color: rgba(99, 99, 99, .09);
-    width: 100%;
-    height: 100%;
+.lzy_footer_btn:hover {
+    opacity: .9;
+    text-decoration: none;
+}
+
+.lzy_footer_btn_close:hover {
+    background-color: rgba(0, 0, 0, .05) !important;
 }
 
 .lzy_popup_footer > button:first-child {
